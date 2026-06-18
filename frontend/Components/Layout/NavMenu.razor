@@ -1,0 +1,114 @@
+﻿<nav class="navbar navbar-expand-sm navbar-dark" style="background-color: #fb5533;">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#">Hotel</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse " id="navbarNav">
+            <div class="container mt-5">
+                <div class="d-flex justify-content-center align-items-end gap-1">
+                    @* Search *@
+                    <div class="form-group">
+                        <input type="text" class="form-control pe-5" style="width:200px;" />
+                    </div>
+
+                    @*Check-in *@
+                    <div class="form-group">
+                        <label class="form-label">Check-in</label>
+                        <input type="date" class="form-control" />
+                    </div>
+
+                    @*Check-out *@
+                    <div class="form-group">
+                        <label class="form-label">Check-out</label>
+                        <input type="date" class="form-control" />
+                    </div>
+
+                    <!-- Search Bar -->
+                    <div class="position-relative">
+                        <div class="bg-white p-3 rounded-3" style="width:220px height: 50px;cursor:pointer" @onclick="ToggleDropdown">
+                            <div class="rounded px-3 py-3 text-center">
+                                @SummaryText
+                            </div>
+                        </div>
+
+                        @if (IsDropdownOpen)
+                        {
+                            <div class="position-absolute bg-white rounded-3 shadow p-4"
+                                 style="top:100%; left:0; width:300px; z-index:1000;">
+
+                                <!-- Người lớn -->
+                                <div class="d-flex justify-content-between align-items-center py-3 border-bottom">
+
+                                    <span>Người lớn</span>
+
+                                    <div class="d-flex align-items-center gap-3">
+
+                                        <button class="btn btn-outline-primary rounded-circle"
+                                                style="width:40px;height:40px" @onclick="() => Change(ref Adults, -1, 1)"
+                                                disabled="@(Adults <= 1)">
+                                            -
+                                        </button>
+
+                                        <span>@Adults</span>
+
+                                        <button class="btn btn-outline-primary rounded-circle"
+                                                style="width:40px;height:40px" @onclick="() => Change(ref Adults, 1, 1)">
+                                            +
+                                        </button>
+
+                                    </div>
+
+                                </div>
+
+                                <button class="btn btn-outline-primary w-100 mt-4" @onclick="ToggleDropdown">
+                                    Xong
+                                </button>
+
+                            </div>
+                        }
+
+                    </div>
+                    <button class="btn me-1 px-3" type="button" style="background-color: #3336fb;">
+                        <i class="bi bi-search "></i>
+                    </button>
+                </div>
+            </div>
+
+            <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                    <a class="nav-link active" aria-current="page" href="/">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Features</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Pricing</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" aria-disabled="true">Disabled</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+
+@code {
+    private int Adults = 1;
+    private bool IsDropdownOpen = false;
+
+    private string SummaryText =>
+        $"{Adults} người lớn ";
+
+    private void Change(ref int field, int delta, int min)
+    {
+        field = Math.Max(min, field + delta);
+    }
+
+    private void ToggleDropdown()
+    {
+        IsDropdownOpen = !IsDropdownOpen;
+    }
+}

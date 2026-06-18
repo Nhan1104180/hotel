@@ -1,0 +1,63 @@
+﻿@inherits LayoutComponentBase
+
+<header>
+    <NavMenu />
+</header>
+
+
+<div style="min-height: 75vh;">
+    @Body
+</div>
+
+<footer class="bg-dark text-white py-5">
+    <div class="container d-flex flex-row justify-content-around align-items-center">
+        <h3 class="text-center fw-bold mb-4">Hotel</h3>
+
+        <ul class="navbar-nav mb-4">
+            <li class="nav-item">
+                <a class="nav-link text-light active" href="/">Home</a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link text-light" href="#">Rooms</a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link text-light" href="#">Services</a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link text-light" href="#">Booking</a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link text-light" href="#">Contact</a>
+            </li>
+        </ul>
+
+        <div class="text-center mb-4">
+            <a href="#" class="btn btn-outline-light rounded-circle mx-1">
+                <i class="bi bi-facebook"></i>
+            </a>
+
+            <a href="#" class="btn btn-outline-light rounded-circle mx-1">
+                <i class="bi bi-twitter"></i>
+            </a>
+
+            <a href="#" class="btn btn-outline-light rounded-circle mx-1">
+                <i class="bi bi-instagram"></i>
+            </a>
+
+            <a href="#" class="btn btn-outline-light rounded-circle mx-1">
+                <i class="bi bi-youtube"></i>
+            </a>
+        </div>
+
+        <hr>
+
+        <p class="text-center text-secondary mb-0">
+            © 2026 Hotel Booking System. All rights reserved.
+        </p>
+
+    </div>
+</footer>
