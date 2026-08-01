@@ -1,0 +1,122 @@
+@inject NavigationManager Navigation
+@inject RoomService _roomService
+
+@if (_roomService._roomList.Count > 0)
+{
+    <div class="position-relative mt-5">
+        <!-- Nút trái -->
+        @if (currentIndex > 0)
+        {
+            <button class="btn rounded-circle position-absolute top-50 start-0 translate-middle-y shadow Leftturn"
+                    style="z-index:1000" @onclick="Prev"> ❮ </button>
+        }
+
+        <!-- Row cards  -->
+        <div class="d-flex align-items-stretch gap-3 overflow-hidden">
+
+            @foreach (var item in _roomService._roomList.Skip(currentIndex).Take(itemsPerPage))
+            {
+                <div style="width:calc(25% - 12px); min-width:0; flex-shrink:0">
+                    <div class="card h-100 shadow-sm rounded-4">
+                        <div class="position-relative">
+                            @if (!string.IsNullOrEmpty(item.ImageUrl))
+                            {
+                                <img src="@item.ImageUrl" class="card-img-top" style="height:220px;object-fit:cover">
+                            }
+                            else
+                            {
+                                <img src="/images/no-image.png" class="card-img-top" style="height:220px;object-fit:cover">
+                            }
+                        </div>
+
+                        <div class="card-body">
+                            <h4 class="fw-bold">Phòng @item.RoomNumber</h4>
+                            <p>
+                                <strong>Loại phòng: </strong>
+                                @item.RoomType
+                            </p>
+
+                            <p>
+                                <strong>Tối đa: </strong>
+                                @item.Capacity người
+                            </p>
+
+                            <p class="mb-2"> @item.Description</p>
+
+                            <p class="mb-2">@item.Status</p>
+
+                            <h5 class="text-danger fw-bold">
+                                @item.Price.ToString("N0") Đ / đêm
+                            </h5>
+                        </div>
+                        <div class="card-footer bg-white border-0">
+                            <button class="btn btn-danger w-100 rounded-3" @onclick='() => Navigation.NavigateTo($"/detail/{item.Id}")'>Xem chi tiết</button>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            @if (IsLastPage)
+            {
+                <div class="card shadow-sm rounded-4 d-flex flex-column justify-content-center align-items-center flex-shrink-0"
+                     style="width:calc(25% - 12px); min-width:0; cursor:pointer" @onclick='() => Navigation.NavigateTo("/rooms")'>
+                    <button class="btn btn-outline-danger rounded-circle mb-2"
+                            style="width:48px;height:48px;pointer-events:none"> ❯ </button>
+                    <span class="text-danger fw-semibold">Xem tất cả</span>
+                </div>
+            }
+
+        </div>
+
+        <!-- Nút phải (khi không phải last page) -->
+        @if (!IsLastPage)
+        {
+            <button class="btn rounded-circle position-absolute top-50 end-0 translate-middle-y shadow Rightturn" style="z-index:1000" @onclick="Next"> ❯ </button>
+        }
+    </div>
+}
+
+else
+{
+    <div class="col-12">
+        <div class="alert alert-info text-center" role="alert">
+            <i class="fas fa-info-circle"></i> Không có phòng
+        </div>
+    </div>
+}
+
+@code {
+    private int currentIndex = 0;
+    private int itemsPerPage = 4;
+    private bool IsLastPage =>
+    _roomService._roomList.Count - currentIndex < itemsPerPage;
+  
+    void Next()
+    {
+        if (!IsLastPage)
+        {
+            currentIndex++;
+        }
+    }
+
+    void Prev()
+    {
+        if (currentIndex > 0)
+        {
+            currentIndex--;
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _roomService.OnChange += StateHasChanged;
+
+        await _roomService.GetRoomList();
+    }
+
+    public void Dispose()
+    {
+        _roomService.OnChange -= StateHasChanged;
+    }
+
+}

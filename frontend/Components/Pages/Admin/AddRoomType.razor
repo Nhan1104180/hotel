@@ -1,0 +1,85 @@
+@page "/Addroomtype"
+@layout AdminLayout
+@inject NavigationManager Navigation
+@inject RoomTypeService _roomTypeService
+
+<PageTitle>Thêm loại phòng</PageTitle>
+
+<div class="container mt-4">
+	<div class="row justify-content-center">
+		<div class="col-lg-8">
+			<div class="card">
+				<div class="card-body">
+					<h4 class="card-title mb-3">Thêm loại phòng</h4>
+
+					<EditForm Model="roomType" OnValidSubmit="HandleValidSubmit">
+						<DataAnnotationsValidator />
+						<ValidationSummary />
+
+						<div class="row">
+							<div class="col-md-6 mb-3">
+								<label for="name" class="form-label">Tên loại phòng</label>
+								<InputText id="name" class="form-control" @bind-Value="roomType.Name" />
+								<ValidationMessage For="() => roomType.Name" />
+							</div>
+
+							<div class="col-md-6 mb-3">
+								<label for="capacity" class="form-label">Sức chứa</label>
+								<InputNumber id="capacity" class="form-control" @bind-Value="roomType.Capacity" />
+								<ValidationMessage For="() => roomType.Capacity" />
+							</div>
+						</div>
+
+						<div class="mb-3">
+							<label for="description" class="form-label">Mô tả</label>
+							<InputTextArea id="description" class="form-control" rows="4"
+										   @bind-Value="roomType.Description" />
+							<ValidationMessage For="() => roomType.Description" />
+						</div>
+
+						@if (!string.IsNullOrEmpty(Message))
+						{
+							<div class="alert alert-danger mt-4">@Message</div>
+						}
+
+						<div class="d-flex justify-content-end">
+							<button type="button" class="btn btn-secondary me-2" @onclick='() => Navigation.NavigateTo("/RoomType-admin")'>Hủy</button>
+							<button type="submit" class="btn btn-primary">Lưu</button>
+						</div>
+					</EditForm>
+
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+@code {
+	private AddRoomTypeViewModel roomType = new AddRoomTypeViewModel();
+	public string Message { get; set; } = "";
+	protected override async Task OnInitializedAsync()
+	{
+		_roomTypeService.OnChange += StateHasChanged;
+		await _roomTypeService.AddRoomType(roomType);
+	}
+
+	private async Task HandleValidSubmit()
+	{
+		var result = await _roomTypeService.AddRoomType(roomType);
+		if (result)
+		{
+			Navigation.NavigateTo("/RoomType-admin");
+		}
+		else
+		{
+			Message = _roomTypeService.ErrorMessage;
+		}
+	}
+
+	public void Dispose()
+	{
+		_roomTypeService.OnChange -= StateHasChanged;
+	}
+
+
+}

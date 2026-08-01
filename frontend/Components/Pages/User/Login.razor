@@ -1,0 +1,65 @@
+@page "/login"
+@layout LoginLayout
+@rendermode InteractiveServer
+@inject NavigationManager Navigation;
+@inject AuthService authService;
+
+<EditForm Model="_login" OnValidSubmit="HandleLogin" class="container-fluid vh-100 d-flex align-items-center justify-content-center bg-light">
+    <div class="card shadow-sm" style="width: 100%; max-width: 400px;">
+        <div class="card-body p-5">
+            <h2 class="text-center mb-4 fw-bold">Đăng Nhập</h2>
+            
+                <div class="mb-3">
+                    <label for="usernameOrEmail" class="form-label">Tên đăng nhập / Email /Số điện thoại</label>
+                    <InputText type="text" class="form-control" id="usernameOrEmail" @bind-Value="_login.EmailOrUsernameOrPhone" placeholder="Nhập tên đăng nhập, email hoặc số điện thoại" required />
+                </div> 
+                <div class="mb-4">
+                    <label for="password" class="form-label">Mật khẩu</label>
+                    <InputText type="password" class="form-control" id="password" @bind-Value="_login.Password" placeholder="Nhập mật khẩu" required />
+                </div>
+ 
+                @if (!string.IsNullOrEmpty(Message))
+                {
+                    <div class="alert alert-danger">@Message</div>
+                }
+
+                <button type="submit" class="btn btn-danger w-100 mb-3 fw-bold">Đăng Nhập</button>
+            
+            <div class="text-center">
+                <a href="#" class="text-decoration-none text-muted me-3">Quên mật khẩu?</a>
+                <a href="/register" class="text-decoration-none text-muted">Đăng ký</a>
+            </div>
+        </div>
+    </div>
+</EditForm> 
+
+@code{
+    public LoginViewModel _login = new LoginViewModel();
+    private string Message = "";
+    protected override async Task OnInitializedAsync()
+    {
+        authService.OnChange += StateHasChanged;
+    }
+
+    private async Task HandleLogin()
+    {
+        var success = await authService.Login(_login);
+        
+        //Khi đăng nhập thành công thì chuyển hướng về trang profile
+        if (success)
+        {
+            Navigation.NavigateTo("/profile");
+        }
+        //Đăng nhập thất bại thì hiển thị thông báo lỗi
+        else
+        {
+            Message = "Không kết nối được server";
+            Message = authService.ErrorMessage;
+        }
+    }
+
+    public void Dispose()
+    {
+        authService.OnChange -= StateHasChanged;
+    }
+}

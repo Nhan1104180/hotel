@@ -1,0 +1,145 @@
+@page "/rooms"
+@using frontend.ViewModel;
+@inject NavigationManager Navigation
+@inject RoomService _roomService
+@inject RoomTypeService _roomTypeService
+
+<div class="container py-4">
+    @if ( _roomService._roomList.Count > 0)
+    {
+        <!-- Filter -->
+        <div class="d-flex flex-wrap gap-2 mb-3">
+            <button class="btn rounded-pill @(selectedType == null ? "btn-secondary text-white" : "btn-outline-secondary")"  @onclick="() => FilterByType(null)">
+                Tất cả (@(_roomTypeService._roomType.Count))
+            </button>
+
+            @foreach (var roomType in _roomTypeService._roomType)
+            {
+                <button class="btn rounded-pill @(selectedType == roomType.Name ? "btn-secondary text-white" : "btn-outline-secondary")"  @onclick="() => FilterByType(roomType.Name)">
+                    @roomType.Name
+                </button>
+            }
+        </div>
+
+        <!-- Sort -->
+        <div class="mb-3">
+            <select class="form-select" @bind="sortOrder">
+                <option value="">Giá</option>
+                <option value="asc">Giá: Giá thấp đến cao</option>
+                <option value="desc">Giá: Giá cao đến thấp</option>
+            </select>
+        </div>
+
+        <div class="row g-4">
+            @foreach (var item in filteredRoomList)
+            {
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100">
+                        <div class="card-header text-center py-5">
+                            <div class="position-relative">
+                                @if (!string.IsNullOrEmpty(item.ImageUrl))
+                                {
+                                    <img src="@item.ImageUrl" class="card-img-top" style="height:220px;object-fit:cover">
+                                }
+                                else
+                                {
+                                    <img src="/images/no-image.png" class="card-img-top" style="height:220px;object-fit:cover">
+                                }
+                            </div>
+                        </div>
+
+                        <div class="card-body d-flex flex-column">
+                            <h4 class="fw-bold">@item.RoomNumber</h4>
+                            <p>
+                                <strong>Loại phòng: </strong>
+                                @item.RoomType
+                            </p>
+                            <p>
+                                <strong>Tối đa: </strong>
+                                @item.Capacity người
+                            </p>
+
+                            <p class="mb-2">@item.Status</p>
+
+                            <h5 class="text-danger fw-bold">
+                                @item.Price.ToString("N0") Đ/ đêm
+                            </h5>
+                        </div>
+                        <div class="card-footer bg-white border-0">
+                            <button class="btn btn-danger w-100 rounded-3" @onclick='() => Navigation.NavigateTo($"/detail/{item.Id}")'>Xem chi tiết</button>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="col-12">
+            <div class="alert alert-info text-center" role="alert">
+                <i class="fas fa-info-circle"></i> Không có phòng
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private string? selectedType = null;
+    string keyword = "";
+
+    private IEnumerable<RoomViewModel> filteredRoomList
+    {
+        get
+        {
+            var query = selectedType == null
+                ? _roomService._roomList.AsEnumerable()
+                : _roomService._roomList.Where(r => r.RoomType == selectedType);
+            
+            if(sortOrder == "asc")
+            {
+                query = query.OrderBy(r => r.Price);
+            }
+            else if(sortOrder == "desc")
+            {
+                query = query.OrderByDescending(r => r.Price);
+            }
+
+            return query;
+        }
+    }
+
+    private void FilterByType(string? typeName)
+    {
+        selectedType = typeName;
+    }
+
+    private string sortOrder = "";
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _roomService.OnChange += StateHasChanged;
+
+        var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
+        var query = QueryHelpers.ParseQuery(uri.Query);
+
+        if (query.TryGetValue("keyword", out var value))
+        {
+            keyword = value.ToString();
+        }
+        
+        if (string.IsNullOrWhiteSpace(keyword))
+        {
+            await _roomService.GetRoomList();
+            await _roomTypeService.GetRoomType();
+        }
+        else
+        {
+            await _roomService.SearchRoom(keyword, 1, 10);
+        }
+    }
+
+    public void Dispose()
+    {
+        _roomService.OnChange -= StateHasChanged;
+    }
+}

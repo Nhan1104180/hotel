@@ -1,0 +1,96 @@
+@page "/service"
+@page "/service/{CategoryId:int?}"
+@inject ServiceService _serviceService
+@inject ServiceCategoryService _serviceCategoryService
+@inject NavigationManager Navigation
+<div class="container py-4">
+    @if (_serviceCategoryService._serviceCategory.Count == 0)
+    {
+        <div class="col-12">
+            <div class="alert alert-info text-center" role="alert">
+                <i class="fas fa-info-circle"></i> Không có dịch vụ
+            </div>
+        </div>
+    }
+    else
+    {
+        <!-- Menu -->
+        <div class="d-flex flex-wrap gap-2 mb-4">
+            <button class="btn rounded-pill @(selectedCategoryId == null ? "btn-secondary text-white" : "btn-outline-secondary")" @onclick="() => FilterByCategory(null)">
+                Tất cả
+            </button>
+                @foreach (var category in _serviceCategoryService._serviceCategory)
+                {
+                    <button class="btn rounded-pill @(selectedCategoryId == category.Id ? "btn-secondary text-white" : "btn-outline-secondary")" @onclick="() => FilterByCategory(category.Id)">
+                        @category.Name
+                    </button>
+                }
+        </div>
+
+        @foreach (var category in _serviceCategoryService._serviceCategory.Where(x => selectedCategoryId == null || x.Id == selectedCategoryId))
+        {
+            <div class="mb-5">
+                @if(selectedCategoryId == null)
+                {
+                    <h4 class="mb-3">@category.Name</h4>
+                }
+                
+                <div class="row g-3">
+                    @foreach (var service in _serviceService._serviceList.Where(x => x.CategoryId == category.Id))
+                    {
+                        <div class="col-6">
+                            <div class="card border-secondary h-100">
+                                @if (!string.IsNullOrEmpty(service.ImageUrl))
+                                {
+                                    <img src="@service.ImageUrl" class="card-img-top" style="height:180px;object-fit:cover">
+                                }
+                                else
+                                {
+                                    <img src="/images/no-image.png" class="card-img-top" style="height:180px;object-fit:cover">
+                                }
+
+                                <div class="card-body">
+                                    <h5>@service.Name</h5>
+                                    <p class="text-secondary">@service.Description</p>
+                                    <p class="fw-bold fs-5 @(string.Equals(service.Status, "Active", StringComparison.OrdinalIgnoreCase) ? "text-success" : "text-danger")">
+                                        @service.Status</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <strong>@service.Price.ToString("N0") Đ </strong>
+                                        <button class="btn btn-danger rounded-3 "> @service.Name</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    }
+</div>
+
+@code {
+    [Parameter]
+    public int? CategoryId { get; set; }
+    private int? selectedCategoryId = null;
+    private void FilterByCategory(int? categoryId)
+    {
+        var url = categoryId == null ? "/service" : $"/service/{categoryId}";
+        Navigation.NavigateTo(url);
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        _serviceService.OnChange += StateHasChanged;
+        await _serviceService.GetServiceList();
+        await _serviceCategoryService.GetServiceCategory();
+    }
+
+    protected override void OnParametersSet()
+    {
+        selectedCategoryId = CategoryId; // đọc lại mỗi khi URL đổi
+    }
+
+    public void Dispose()
+    {
+        _serviceService.OnChange -= StateHasChanged;
+    }
+}

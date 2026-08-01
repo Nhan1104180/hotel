@@ -1,0 +1,279 @@
+@page "/profile"
+@* @attribute [Authorize] *@
+@inject AuthService AuthService
+@inject UserService UserService
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthProvider
+@rendermode InteractiveServer
+
+<div class="container mt-4">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <img src="https://via.placeholder.com/120" class="rounded-circle img-thumbnail mb-3">
+                    <h5>@UserService.User.Username</h5>
+                    <p class="text-muted"> @UserService.User.Email</p>
+                    <button class="btn btn-outline-primary w-100"> Đổi mật khẩu </button>
+                </div>
+            </div>
+
+            <div class="list-group mt-3">
+                <a href="#" class="list-group-item list-group-item-action active"> Hồ sơ </a>
+                <a href="#" class="list-group-item list-group-item-action">Lịch sử đặt phòng</a>
+                <a href="#" class="list-group-item list-group-item-action">Thanh toán</a>
+                <a href="#" class="list-group-item list-group-item-action text-danger"> Đăng xuất</a>
+            </div>
+
+        </div>
+
+        <!-- Content -->
+        <div class="col-md-9">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0"> Thông tin cá nhân</h4>
+                </div>
+
+                <div class="card-body">
+                    <EditForm Model="@UserService.User" OnValidSubmit="HandleValidSubmit">
+                        <DataAnnotationsValidator />
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Họ tên</label>
+                                <InputText class="form-control" @bind-Value="UserService.User.FullName"
+                                           disabled="@(!isEdit)" />
+
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Email</label>
+                                <InputText class="form-control" @bind-Value="UserService.User.Email"
+                                           disabled="@(!isEdit)" />
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Số điện thoại</label>
+                                <InputText class="form-control" @bind-Value="UserService.User.Phone"
+                                           disabled="@(!isEdit)" />
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Địa chỉ</label>
+                                <InputText class="form-control" @bind-Value="UserService.User.Address"
+                                           disabled="@(!isEdit)" />
+                            </div>
+
+                        </div>
+                        @* @if (!isEdit)
+                        {
+                            <div class="mt-4">
+                                <button class="btn btn-primary" @onclick="EnableEditing"> Chỉnh sửa thông tin</button>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="mt-4">
+                                <button class="btn btn-primary"> Cập nhật thông tin</button>
+                                <button class="btn btn-primary" @onclick="CancelEditing"> Hủy</button>
+                            </div>
+                        } *@
+                        @if (!isEdit)
+                        {
+                            <div class="mt-4">
+                                <button type="button" class="btn btn-primary" @onclick="EnableEditing">Chỉnh sửa thông
+                                    tin</button>
+                                </div>
+                            }
+                        else
+                            {
+                                <div class="mt-4">
+                                    <button type="submit" class="btn btn-primary">Cập nhật thông tin</button>
+                                    <button type="button" class="btn btn-secondary" @onclick="CancelEditing">Hủy</button>
+                                </div>
+                            }
+                        </EditForm>
+                    </div>
+                </div>
+
+                <!-- Booking History -->
+
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h4 class="mb-0"> Lịch sử đặt phòng</h4>
+                            <a href="/Booking" class="btn btn-success btn-sm"> Đặt phòng mới</a>
+                        </div>
+                    </div>
+
+                    <div class="card-body">
+                        <ul class="nav nav-tabs mb-3">
+                            <li class="nav-item">
+                                <a class="nav-link active">Tất cả</a>
+                            </li>
+
+                            <li class="nav-item">
+                                <a class="nav-link">Chờ thanh toán</a>
+                            </li>
+
+                            <li class="nav-item">
+                                <a class="nav-link">Đã thanh toán</a>
+                            </li>
+
+                            <li class="nav-item">
+                                <a class="nav-link">Đã Check-in</a>
+                            </li>
+
+                            <li class="nav-item">
+                                <a class="nav-link">Đã Check-out</a>
+                            </li>
+
+                            <li class="nav-item">
+                                <a class="nav-link">Đã hủy</a>
+                            </li>
+
+                        </ul>
+
+                        <table class="table table-bordered table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Mã Booking</th>
+                                    <th>Phòng</th>
+                                    <th>Check In</th>
+                                    <th>Check Out</th>
+                                    <th>Tổng tiền</th>
+                                    <th>Trạng thái</th>
+                                    <th>Thao tác</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                <tr>
+                                    <td>BK001</td>
+                                    <td>Deluxe Room</td>
+                                    <td>20/07/2026</td>
+                                    <td>22/07/2026</td>
+                                    <td>2.000.000 VNĐ</td>
+                                    <td>
+                                        <span class="badge bg-success"> Đã thanh toán</span>
+                                    </td>
+
+                                    <td>
+                                        <button class="btn btn-sm btn-primary"> Chi tiết</button>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td>BK002</td>
+                                    <td>Family Room</td>
+                                    <td>25/07/2026</td>
+                                    <td>27/07/2026</td>
+                                    <td>3.500.000 VNĐ</td>
+
+                                    <td>
+                                        <span class="badge bg-warning text-dark"> Chờ Check-in</span>
+                                    </td>
+
+                                    <td>
+                                        <button class="btn btn-sm btn-danger"> Hủy</button>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td>BK003</td>
+                                    <td>Suite Room</td>
+                                    <td>10/06/2026</td>
+                                    <td>12/06/2026</td>
+                                    <td>5.000.000 VNĐ</td>
+
+                                    <td>
+                                        <span class="badge bg-info"> Đã Check-out </span>
+                                    </td>
+
+                                    <td>
+                                        <button class="btn btn-sm btn-secondary"> Xem </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+@code
+{
+    private bool isEdit = false;
+    private UserViewModel? originalUser; // dùng để khôi phục nếu bấm Hủy
+
+    private async Task HandleValidSubmit()
+    {
+        // Gọi service để lưu thông tin xuống DB
+        await UserService.UpdateUser(UserService.User.Id, UserService.User);
+        isEdit = false;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Kiểm tra AccessToken, nếu hết hạn thì refresh
+        var refreshSuccess = await AuthService.RefreshToken();
+
+        // Nếu refresh thất bại thì quay về Login
+        if (!refreshSuccess)
+        {
+            Navigation.NavigateTo("/login", true);
+            return;
+        }
+
+        // Lấy AuthenticationState mới
+        var authState = await AuthProvider.GetAuthenticationStateAsync();
+
+        if (!(authState.User.Identity?.IsAuthenticated ?? false))
+        {
+            Navigation.NavigateTo("/login");
+            return;
+        }
+
+        var userIdClaim = authState.User.FindFirst("id") ?? authState.User.FindFirst(ClaimTypes.NameIdentifier);
+
+        if (userIdClaim != null && int.TryParse(userIdClaim.Value, out var userId))
+        {
+            await UserService.GetUserById(userId);
+        }
+
+        UserService.OnChange += StateHasChanged;
+    }
+
+    private void EnableEditing()
+    {
+        // Lưu bản sao dữ liệu gốc để có thể khôi phục nếu người dùng bấm Hủy
+        originalUser = new UserViewModel()
+        {
+            FullName = UserService.User.FullName,
+            Email = UserService.User.Email,
+            Phone = UserService.User.Phone,
+            Address = UserService.User.Address,
+
+        };
+        isEdit = true;
+    }
+
+    private void CancelEditing()
+    {
+        if (originalUser != null)
+        {
+            UserService.User.FullName = originalUser.FullName;
+            UserService.User.Email = originalUser.Email;
+            UserService.User.Phone = originalUser.Phone;
+            UserService.User.Address = originalUser.Address;
+        }
+
+        isEdit = false;
+    }
+
+    public void Dispose()
+    {
+        UserService.OnChange -= StateHasChanged;
+    }
+}

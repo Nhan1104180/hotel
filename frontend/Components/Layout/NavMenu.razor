@@ -1,106 +1,182 @@
-﻿<nav class="navbar navbar-expand-sm navbar-dark" style="background-color: #fb5533;">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="#">Hotel</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse " id="navbarNav">
-            <div class="container mt-5">
-                <div class="d-flex justify-content-center align-items-end gap-1">
-                    @* Search *@
-                    <div class="form-group">
-                        <input type="text" class="form-control pe-5" style="width:200px;" />
-                    </div>
+﻿@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject AuthService AuthService
+@inject RoomService RoomService
+@inject NavigationManager Navigation
 
-                    @*Check-in *@
-                    <div class="form-group">
-                        <label class="form-label">Check-in</label>
-                        <input type="date" class="form-control" />
-                    </div>
+<nav class="navbar navbar-expand-lg py-4" style="background-color: #fb5533; height:190px">
+    <div class="container-fluid flex-column">
 
-                    @*Check-out *@
-                    <div class="form-group">
-                        <label class="form-label">Check-out</label>
-                        <input type="date" class="form-control" />
-                    </div>
+        <!-- Hàng trên -->
+        <div class="w-100 d-flex align-items-center">
 
-                    <!-- Search Bar -->
-                    <div class="position-relative">
-                        <div class="bg-white p-3 rounded-3" style="width:220px height: 50px;cursor:pointer" @onclick="ToggleDropdown">
-                            <div class="rounded px-3 py-3 text-center">
-                                @SummaryText
-                            </div>
-                        </div>
-
-                        @if (IsDropdownOpen)
-                        {
-                            <div class="position-absolute bg-white rounded-3 shadow p-4"
-                                 style="top:100%; left:0; width:300px; z-index:1000;">
-
-                                <!-- Người lớn -->
-                                <div class="d-flex justify-content-between align-items-center py-3 border-bottom">
-
-                                    <span>Người lớn</span>
-
-                                    <div class="d-flex align-items-center gap-3">
-
-                                        <button class="btn btn-outline-primary rounded-circle"
-                                                style="width:40px;height:40px" @onclick="() => Change(ref Adults, -1, 1)"
-                                                disabled="@(Adults <= 1)">
-                                            -
-                                        </button>
-
-                                        <span>@Adults</span>
-
-                                        <button class="btn btn-outline-primary rounded-circle"
-                                                style="width:40px;height:40px" @onclick="() => Change(ref Adults, 1, 1)">
-                                            +
-                                        </button>
-
-                                    </div>
-
-                                </div>
-
-                                <button class="btn btn-outline-primary w-100 mt-4" @onclick="ToggleDropdown">
-                                    Xong
-                                </button>
-
-                            </div>
-                        }
-
-                    </div>
-                    <button class="btn me-1 px-3" type="button" style="background-color: #3336fb;">
-                        <i class="bi bi-search "></i>
-                    </button>
-                </div>
+            <div class="col-2">
+                <a class="navbar-brand fs-3 text-white" href="/">
+                    Hotel
+                </a>
             </div>
 
-            <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-                <li class="nav-item">
-                    <a class="nav-link active" aria-current="page" href="/">Home</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">Features</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">Pricing</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" aria-disabled="true">Disabled</a>
-                </li>
-            </ul>
+            <div class="col-6 d-flex justify-content-center gap-5">
+
+                <a class="nav-link text-white" href="/">Home</a>
+                <a class="nav-link text-white" href="/rooms">Phòng</a>
+                <a class="nav-link text-white" href="/service">Dịch vụ</a>
+                <a class="nav-link text-white" href="#"> Đặt phòng</a>
+                <a class="nav-link text-white" href="#"> Liên hệ</a>   
+
+            </div>
+
+            <div class="col-4 d-flex justify-content-end align-items-center gap-3">
+                <a class="nav-link text-white" href="#">Thông báo</a>
+                @if (!IsAuthenticated)
+                {
+                    <button class="btn btn-light rounded-pill px-4" @onclick='() => Navigation.NavigateTo("/register")'>
+                        Đăng ký</button>
+                        <button class="btn btn-light rounded-pill px-4" @onclick='() => Navigation.NavigateTo("/login")'>Đăng nhập
+                            <i class="bi bi-box-arrow-in-right"></i>
+                        </button>
+                    }
+                else
+                    {
+                        <div class="dropdown">
+                            <button class="btn btn-link text-white text-decoration-none dropdown-toggle"
+                                    data-bs-toggle="dropdown">
+                                <i class="bi bi-person-circle fs-5"></i> @UserName
+                            </button>
+
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li>
+                                    <a class="dropdown-item" href="/profile"> Hồ sơ</a>
+                                </li>
+
+                                <li>
+                                    <a class="dropdown-item" href="/booking">Đơn đặt phòng</a>
+                                </li>
+
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+
+                                <li>
+                                    <button class="dropdown-item text-danger" @onclick="Logout"> Đăng xuất</button>
+                                </li>
+                            </ul>
+
+                        </div>
+                    }
+            </div>
+
+        </div>
+
+        <!-- Hàng dưới -->
+
+        <div class="d-flex justify-content-center align-items-end gap-3 mt-4">
+            <input class="form-control" style="width:220px"  @bind="keyword" placeholder="Search" />
+
+            @*Check-in *@
+            <div class="d-flex flex-column align-items-center">
+                <label class="form-label text-white mb-2">Nhận phòng</label>
+                <input type="date" class="form-control" style="width:180px;" />
+            </div>
+
+            @*Check-out *@
+            <div class="d-flex flex-column align-items-center">
+                <label class="form-label text-white mb-2">Trả phòng</label>
+                <input type="date" class="form-control" style="width:180px;" />
+            </div>
+
+            <!-- Số khách -->
+            <div class="position-relative">
+                <div class="bg-white rounded-3 d-flex align-items-center justify-content-center text-center px-3" style="width:150px; height:38px;cursor:pointer;" @onclick="ToggleDropdown">
+                    @SummaryText
+                </div>
+
+                @if (IsDropdownOpen)
+                {
+                    <div class="position-absolute bg-white rounded-3 shadow p-4"
+                            style="top:100%; left:0; width:300px; z-index:1000;">
+
+                        <!-- Số khách -->
+                        <div class="d-flex justify-content-between align-items-center py-3 border-bottom">
+
+                            <span>Số khách</span>
+
+                            <div class="d-flex align-items-center gap-3">
+
+                                <button class="btn btn-outline-primary rounded-circle" style="width:40px;height:40px"  @onclick="() => Change(ref Adults, -1, 1)" disabled="@(Adults <= 1)">-</button>
+                                <span>@Adults</span>
+                                <button class="btn btn-outline-primary rounded-circle" style="width:40px;height:40px"  @onclick="() => Change(ref Adults, 1, 1)">+</button>
+                            </div>
+
+                        </div>
+
+                        <button class="btn btn-outline-primary w-100 mt-4" @onclick="ToggleDropdown">
+                            Xong
+                        </button>
+                    </div>
+                }
+            </div>
+
+            <button class="btn d-flex align-items-center justify-content-center px-3" type="button" style="background-color: #3336fb; height:var(--field-h);" @onclick="HandleSearch">
+                <i class="bi bi-search"></i>
+            </button>
         </div>
     </div>
 </nav>
 
-
 @code {
     private int Adults = 1;
     private bool IsDropdownOpen = false;
+    private string SummaryText => $" Số khách: {Adults} ";
+    private bool IsAuthenticated = false;
+    private string UserName = "";
+    private bool _loaded;
+    private string keyword = "";
 
-    private string SummaryText =>
-        $"{Adults} người lớn ";
+    private async Task HandleSearch()
+    {
+        Navigation.NavigateTo($"/rooms?keyword={Uri.EscapeDataString(keyword)}",forceLoad: true);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && !_loaded)
+        {
+            _loaded = true;
+            AuthenticationStateProvider.AuthenticationStateChanged += AuthenticationChanged;
+            await LoadUser();
+            StateHasChanged();
+        }
+    }
+
+    private async void AuthenticationChanged(Task<AuthenticationState> task)
+    {
+        await LoadUser();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task LoadUser()
+    {
+        var state = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+
+        var user = state.User;
+
+        IsAuthenticated = user.Identity?.IsAuthenticated ?? false;
+
+        if (IsAuthenticated)
+        {
+            UserName =
+                user.Identity?.Name ??
+                user.FindFirst(ClaimTypes.Name)?.Value ??
+                user.FindFirst("Username")?.Value ??
+                user.FindFirst("username")?.Value ??
+                user.FindFirst("unique_name")?.Value ??
+                "";
+        }
+        else
+        {
+            UserName = "";
+        }
+    }
 
     private void Change(ref int field, int delta, int min)
     {
@@ -110,5 +186,17 @@
     private void ToggleDropdown()
     {
         IsDropdownOpen = !IsDropdownOpen;
+    }
+
+    private async Task Logout()
+    {
+        await AuthService.Logout();
+
+        Navigation.NavigateTo("/", true);
+    }
+
+    public void Dispose()
+    {
+        AuthenticationStateProvider.AuthenticationStateChanged -= AuthenticationChanged;
     }
 }

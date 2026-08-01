@@ -1,0 +1,119 @@
+@page "/register"
+@layout LoginLayout
+@inject NavigationManager Navigation
+@inject AuthService _authService
+
+<EditForm Model="_register" OnValidSubmit="HandleValidSubmit" class="container-fluid min-vh-100 d-flex align-items-center justify-content-center bg-light">
+
+    <DataAnnotationsValidator />
+    <div class="card shadow-sm" style="width: 100%; max-width: 400px;">
+        <div class="card-body py-5">
+            <h2 class="text-center mb-4 fw-bold">Đăng ký</h2>
+
+            <div class="mb-3">
+                <label class="form-label">Tên người dùng *</label>
+                <InputText class="form-control" @bind-Value="_register.Username" />
+                <ValidationMessage For="() => _register.Username" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Họ và Tên *</label>
+                <InputText class="form-control" @bind-Value="_register.FullName" />
+                <ValidationMessage For="() => _register.FullName" />
+            </div>
+
+         
+            <div class="mb-3">
+                <label class="form-label">Email *</label>
+                <InputText class="form-control" @bind-Value="_register.Email" />
+                <ValidationMessage For="() => _register.Email" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Số điện thoại *</label>
+                <InputText class="form-control" @bind-Value="_register.Phone" />
+                <ValidationMessage For="() => _register.Phone" />
+
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Mật khẩu *</label>
+                <InputText type="password" class="form-control" @bind-Value="_register.Password" />
+                <ValidationMessage For="() => _register.Password" />
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label">Xác nhận mật khẩu *</label>
+                <InputText type="password" class="form-control" @bind-Value="_register.ConfirmPassword" />
+                <ValidationMessage For="() => _register.ConfirmPassword" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Địa chỉ *</label>
+                <InputText class="form-control" @bind-Value="_register.Address" />
+                <ValidationMessage For="() => _register.Address" />
+            </div>
+            
+            @if (!string.IsNullOrEmpty(ErrorMessage))
+            {
+                <div class="alert alert-danger"> @ErrorMessage</div>
+            }
+
+            <button type="submit" class="btn btn-danger w-100 mb-3 fw-bold"> Tạo tài khoản</button>
+
+            <div class="text-center">
+                <span>Bạn đã có tài khoản?</span>
+                <a href="/login" class="text-decoration-none text-muted">Đăng nhập</a>
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    public RegisterViewModel _register = new RegisterViewModel();
+    private string ErrorMessage = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        _authService.OnChange += StateHasChanged;
+        await _authService.Register(_register);
+    }
+
+    //Kiểm tra Password với ConfirmPassword nếu không bằng nhau thì báo lỗi
+    private bool ValidatePasswords()
+    {
+        if (_register.Password != _register.ConfirmPassword)
+        {
+            ErrorMessage = "Mật khẩu xác nhận không đúng.";
+            return false;
+        }
+
+        ErrorMessage = "";
+        return true;
+    }
+    
+    <!-- Khi đăng ký thành công thì chuyển sang trang login-->
+    protected async Task HandleValidSubmit()
+    {
+        if (!ValidatePasswords())
+        {
+            return;
+        }
+
+        var result = await _authService.Register(_register);
+        if (result)
+        {
+            Navigation.NavigateTo("/login");
+        }
+        else
+        {
+            ErrorMessage = _authService.ErrorMessage;
+        }
+    }
+
+    public void Dispose()
+    {
+        _authService.OnChange -= StateHasChanged;
+    }
+
+}

@@ -1,0 +1,26 @@
+.Leftturn {
+    border: 1px black solid;
+    background-color: white !important;
+    color: black !important;
+    transform: all 0.5s;
+}
+
+.Rightturn{
+    border: 1px black solid;
+    background-color: white !important;
+    color: black !important;
+    transform: all 0.5s;
+}
+
+.Leftturn:hover{
+    transform: all 0.5s;
+    background-color: #fb5533 !important;
+    color: white !important;
+}
+
+.Rightturn:hover{
+    transform: all 0.5s;
+    background-color: #fb5533 !important;
+    color: white !important;
+}
+

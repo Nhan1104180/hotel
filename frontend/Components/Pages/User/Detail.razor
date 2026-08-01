@@ -1,0 +1,151 @@
+@page "/detail/{Id:int}"
+@inject RoomService _roomService
+@implements IDisposable
+
+@if (_roomDetail != null)
+{
+    <div class="container my-5">
+
+        <div class="card p-4">
+
+            <div class="row">
+                <!-- Image -->
+                <div class="col-md-4">
+                    @if (!string.IsNullOrEmpty(_roomDetail.ImageUrl))
+                    {
+                        <img src="@_roomDetail.ImageUrl" class="img-fluid border rounded"
+                             style="height:220px;object-fit:cover;" />
+                    }
+                    else
+                    {
+                        <img src="/images/no-image.png" class="img-fluid border rounded"
+                             style="height:220px;object-fit:cover;" />
+                    }
+                </div>
+
+                <!-- Right -->
+                <div class="col-md-6">
+                    <h3 class="fw-bold"> Phòng @_roomDetail.RoomNumber
+                    </h3>
+
+                    <p>Loại phòng: @_roomDetail.RoomType</p>
+
+                    <p>Tối đa: @_roomDetail.Capacity người</p>
+
+                    <p>@_roomDetail.Description</p>
+
+                    <h4 class="text-danger fw-bold mb-4">
+                        @_roomDetail.Price.ToString("N0") VNĐ
+                    </h4>
+
+                    <!-- Date -->
+                    <div class="row text-center mb-4">
+
+                        <div class="col">
+                            <label class="form-label">Nhận phòng</label>
+                            <InputDate @bind-Value="CheckIn" class="form-control" />
+                        </div>
+
+                        <div class="col">
+                            <label class="form-label">Trả phòng</label>
+                            <InputDate @bind-Value="CheckOut" class="form-control" />
+                        </div>
+
+                    </div>
+
+                    <!-- Guest -->
+                    <div class="border rounded p-3 mb-4">
+
+                        <div class="d-flex justify-content-start align-items-center gap-4">
+                            <span class="fw-semibold">Số khách</span>
+                            <button class="btn btn-outline-secondary rounded-circle" style="width:42px;height:42px;     "
+                                    @onclick="() => Change(-1)" disabled="@(Adults == 1)"> - </button>
+
+                            <span class="fs-5">@Adults</span>
+
+                            <button class="btn btn-outline-secondary rounded-circle" style="width:42px;height:42px;"
+                                    @onclick="() => Change(1)"> + </button>
+
+                        </div>
+
+                    </div>
+
+                    <!-- Total -->
+                    @{
+                        decimal Total = _roomDetail.Price;
+                        Total = Total * @NumberOfDays;
+                    }
+                    <div class="mb-4">
+                        <strong> @_roomDetail.Price.ToString("N0") × @NumberOfDays đêm</strong>
+                        <span class="ms-3"> = @Total.ToString("N0") VNĐ</span>
+                    </div>
+
+                    <button class="btn btn-danger px-5">Đặt phòng</button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Description -->
+
+        <div class="card mt-4">
+
+            <div class="card-body">
+
+                <h5>Mô tả</h5>
+
+                @_roomDetail.Description
+
+            </div>
+
+        </div>
+
+    </div>
+}
+
+@code {
+
+    [Parameter]
+    public int Id { get; set; }
+
+    private RoomDetailViewModel? _roomDetail;
+
+    private int Adults = 1;
+    private DateTime? CheckIn = DateTime.Today;
+    private DateTime? CheckOut =  DateTime.Today.AddDays(1);
+    private int NumberOfDays =>
+    CheckIn.HasValue && CheckOut.HasValue && CheckOut > CheckIn? (CheckOut.Value - CheckIn.Value).Days : 0;
+
+    private decimal TotalPrice =>
+        NumberOfDays * (_roomDetail?.Price ?? 0);
+
+    private void Change(int value)
+    {
+        Adults = Math.Max(1, Adults + value);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _roomService.OnChange += OnRoomChanged;
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await _roomService.GetRoomDetail(Id);
+        _roomDetail = _roomService._roomDetail;
+    }
+
+    private void OnRoomChanged()
+    {
+        _roomDetail = _roomService._roomDetail;
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        _roomService.OnChange -= OnRoomChanged;
+    }
+
+}

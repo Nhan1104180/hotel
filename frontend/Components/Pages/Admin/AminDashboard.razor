@@ -1,0 +1,154 @@
+@page "/admin-dashboard"
+@layout AdminLayout
+
+<!-- Header -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3>Tổng quan hôm nay</h3>
+    <div>
+        <p>Admin</p>
+    </div>
+
+</div>
+
+<!-- Card thống kê -->
+<div class="row g-3 mb-4">
+
+    <div class="col-md-3">
+        <div class="card bg-secondary text-light">
+            <div class="card-body">
+                <p>Phòng đang có khách</p>
+                <h2>24 / 40</h2>
+                <small>Tỷ lệ lấp đầy: 60%</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card bg-secondary text-light">
+            <div class="card-body">
+                <p>Check-in hôm nay</p>
+                <h2 class="text-success">8</h2>
+                <small>3 khách chưa đến</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card bg-secondary text-light">
+            <div class="card-body">
+                <p>Check-out hôm nay</p>
+                <h2 class="text-warning">5</h2>
+                <small>2 yêu cầu trễ</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card bg-secondary text-light">
+            <div class="card-body">
+                <p>Doanh thu tháng này</p>
+                <h2>182M</h2>
+                <small class="text-success">
+                    ↑ 12% so tháng trước
+                </small>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Nội dung -->
+<div class="row g-3">
+
+    <!-- Hoạt động -->
+    <div class="col-lg-5">
+
+        <div class="card bg-secondary text-light h-100">
+
+            <div class="card-header">
+                HOẠT ĐỘNG HÔM NAY
+            </div>
+
+            <div class="list-group list-group-flush">
+
+                <div class="list-group-item bg-secondary text-light d-flex justify-content-between">
+                    <div>
+                        <strong>Nguyễn Văn An</strong><br />
+                        Phòng 201 - Deluxe
+                    </div>
+
+                    <button class="btn btn-success btn-sm">
+                        Check in
+                    </button>
+                </div>
+
+                <div class="list-group-item bg-secondary text-light d-flex justify-content-between">
+                    <div>
+                        <strong>Trần Thị Lan</strong><br />
+                        Phòng 305 - Suite
+                    </div>
+
+                    <button class="btn btn-primary btn-sm">
+                        Đang ở
+                    </button>
+                </div>
+
+                <div class="list-group-item bg-secondary text-light d-flex justify-content-between">
+                    <div>
+                        <strong>Lê Minh Khoa</strong><br />
+                        Phòng 102
+                    </div>
+
+                    <button class="btn btn-danger btn-sm">
+                        Check out
+                    </button>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Tình trạng phòng -->
+    <div class="col-lg-7">
+
+        <div class="card bg-secondary text-light h-100">
+
+            <div class="card-header">
+                TÌNH TRẠNG PHÒNG NHANH
+            </div>
+
+            <div class="card-body">
+
+                <div class="d-flex gap-3 mb-3">
+
+                    <span class="badge bg-success">
+                        Trống
+                    </span>
+
+                    <span class="badge bg-danger">
+                        Có khách
+                    </span>
+
+                    <span class="badge bg-warning text-dark">
+                        Đang dọn
+                    </span>
+
+                </div>
+
+                <div class="row g-2">
+
+                    @for (int i = 101; i <= 115; i++)
+                    {
+                        <div class="col-3 col-md-2">
+                            <button class="btn btn-light w-100">
+                                @i
+                            </button>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

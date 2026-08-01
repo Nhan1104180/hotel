@@ -1,0 +1,98 @@
+@page "/AddRoom-Admin"
+@layout AdminLayout
+@inject NavigationManager Navigation
+@inject RoomService _roomService
+@inject RoomTypeService _roomTypeService
+
+<PageTitle>Thêm phòng</PageTitle>
+<div class="container py-4">
+	<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+		<div>
+			<h1 class="h3 mb-1">Tạo phòng mới</h1>
+			<p class="text-muted mb-0">Nhập thông tin để thêm phòng vào hệ thống.</p>
+		</div>
+		<a href="/Room-admin" class="btn btn-outline-secondary">
+			<i class="bi bi-arrow-left me-1"></i>Quay lại
+		</a>
+	</div>
+
+	<div class="card border-0 shadow-sm">
+		<div class="card-header bg-white py-3">
+			<h2 class="h5 mb-0">Thông tin phòng</h2>
+		</div>
+		<div class="card-body p-4">
+			<EditForm Model="room" OnValidSubmit="HandleValidSubmit">
+				<DataAnnotationsValidator />
+				<div class="row g-3">
+					<div class="col-md-6">
+						<label for="roomNumber" class="form-label">Tên phòng <span class="text-danger">*</span></label>
+						<InputText @bind-Value="room.RoomNumber" id="roomNumber" type="text" class="form-control" />
+						<ValidationMessage For="@(() => room.RoomNumber)" />
+					</div>
+
+					<div class="col-md-6">
+						<label for="roomType" class="form-label">Loại phòng <span class="text-danger">*</span></label>
+						<InputSelect @bind-Value="room.RoomTypeId" id="roomType" class="form-select" required>
+							<option value="0" selected disabled>Chọn loại phòng</option>
+							@foreach (var roomType in _roomTypeService._roomType)
+							{
+								<option value="@roomType.Id">@roomType.Name</option>
+							}
+						</InputSelect>
+						<ValidationMessage For="@(() => room.RoomTypeId)" />
+					</div>
+
+					<div class="col-md-6">
+						<label for="price" class="form-label">Giá phòng / đêm <span class="text-danger">*</span></label>
+						<div class="input-group">
+							<InputNumber @bind-Value="room.Price" id="price" type="number" class="form-control" min="0" step="1000" placeholder="Ví dụ: 500000" required />
+							<span class="input-group-text">VNĐ</span>
+							<ValidationMessage For="@(() => room.Price)" />
+						</div>
+					</div>
+				</div>
+
+				@if (!string.IsNullOrEmpty(Message))
+                {
+                    <div class="alert alert-danger mt-4">@Message</div>
+                }
+
+				<hr class="my-4" />
+				<div class="d-flex justify-content-end gap-2">
+					<button type="reset" class="btn btn-light border">Làm lại</button>
+					<button type="submit" class="btn btn-primary">
+						<i class="bi bi-plus-lg me-1"></i>Tạo phòng
+					</button>
+				</div>
+			</EditForm>
+		</div>
+	</div>
+</div>
+
+@code {
+	private AddRoomViewModel room = new AddRoomViewModel();
+	private string Message = "";
+	protected override async Task OnInitializedAsync()
+	{
+		_roomService.OnChange += StateHasChanged;
+		await _roomTypeService.GetRoomType();
+	}
+	
+	protected async Task HandleValidSubmit()
+	{
+		var result = await _roomService.AddRoom(room);
+		if (result)
+		{
+			Navigation.NavigateTo("/Room-admin");
+		}
+		else
+		{
+			Message = _roomService.ErrorMessage;
+		}
+	}
+
+	public void Dispose()
+	{
+		_roomService.OnChange -= StateHasChanged;
+	}
+}

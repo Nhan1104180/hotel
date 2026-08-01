@@ -1,0 +1,402 @@
+@page "/Room-admin"
+@layout AdminLayout
+@inject NavigationManager Navigation
+@inject RoomService _roomService
+@inject RoomTypeService _roomTypeService
+@inject IJSRuntime JS
+
+<div class="container mt-4">
+
+    <!-- Header -->
+    <div class="border p-3 mb-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Dashboard / Rooms</h5>
+
+            <button class="btn btn-primary" @onclick='@(() => Navigation.NavigateTo("/AddRoom-Admin"))'> + Thêm phòng
+            </button>
+        </div>
+    </div>
+
+    <!-- Search -->
+    <div class="row g-3 align-items-end mb-4">
+
+        <div class="col-md-4">
+            <label class="form-label">Tìm kiếm</label>
+            <input class="form-control" placeholder="Nhập tên phòng" @bind="keyword">
+        </div>
+
+        <div class="col-md-3">
+            <label class="form-label">Loại phòng</label>
+            <select class="form-select" @bind="selectedRoomType">
+                <option>Tất cả</option>
+                @foreach (var roomType in _roomTypeService._roomType)
+                {
+                    <option>@roomType.Name</option>
+                }
+            </select>
+        </div>
+
+        <div class="col-md-3">
+            <label class="form-label">Trạng thái</label>
+            <select class="form-select" @bind="selectedStatus">
+                <option>Tất cả</option>
+                @foreach (var status in _roomService._roomStatusList)
+                {
+                    <option>@status.name</option>
+                }
+            </select>
+        </div>
+
+        <div class="col-md-2">
+            <button class="btn btn-success w-100" @onclick="SearchRoom">Tìm</button>
+        </div>
+    </div>
+
+    <!-- Table -->
+    <table class="table table-bordered table-hover align-middle">
+
+        <thead class="table-light">
+            <tr class="text-center">
+                <th>STT</th>
+                <th>Tên phòng</th>
+                <th>Loại phòng</th>
+                <th>Giá</th>
+                <th>Số người</th>
+                <th>Trạng thái</th>
+                <th>Thao tác</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            @foreach (var (room, i) in PagedRooms.Select((room, i) => (room, i)))
+            {
+                bool isEditing = editRoomId == room.Id;
+                <tr>
+                    <td class="text-center">
+                        @(((currentPage - 1) * pageSize) + i + 1)
+                    </td>
+
+                    <td>@room.RoomNumber</td>
+
+                    <!-- Loại phòng: hiển thị bình thường, hoặc select khi đang sửa -->
+                    <td>
+                        @if (isEditing)
+                        {
+                            <select class="form-select form-select-sm" @bind="editRoomTypeId">
+                                @foreach (var roomType in _roomTypeService._roomType)
+                                {
+                                    <option value="@roomType.Id">@roomType.Name</option>
+                                }
+                            </select>
+                        }
+                        else
+                        {
+                            @room.RoomType
+                        }
+                    </td>
+
+                    <td>
+                        @if (isEditing)
+                        {
+                            <input type="number" class="form-control form-control-sm @(priceError != null ? "is-invalid" : "")"   step="1000" min="1000" @bind="editPrice" @bind:event="oninput" @onblur="ValidatePrice" />
+                            @if (priceError != null)
+                            {
+                                <div class="text-danger small mt-1">@priceError</div>
+                            }
+                        }
+                        else
+                        {
+                            @($"{room.Price:N0} Đ")
+                        }
+
+                    </td>
+
+                    <td>@room.Capacity</td>
+
+                    <td>
+                        @if (editStatusRoomId == room.Id)
+                        {
+                            <select class="form-select form-select-sm" @bind="editStatusId">
+                                @foreach (var status in _roomService._roomStatusList)
+                                {
+                                    <option value="@status.Id">@status.name</option>
+                                }
+                            </select>
+                        }
+                        else
+                        {
+                            <span class="badge @GetStatusBadgeClass(room.Status)">@room.Status</span>
+                        }
+                    </td>
+
+                    <td>
+                        @if (isEditing)@* Cập nhật thông tin phòng *@
+                        {
+                            <button class="btn btn-success btn-sm" @onclick="() => SaveRoom(room.Id)">Lưu</button>
+                            <button class="btn btn-secondary btn-sm mx-1" @onclick="CancelEdit">Hủy</button>
+                        }
+                        else if (editStatusRoomId == room.Id)
+                        @* Cập nhật trạng thái phòng *@
+                        {
+                            <button class="btn btn-success btn-sm" @onclick="() => SaveStatus(room.Id)">Lưu</button>
+                            <button class="btn btn-secondary btn-sm mx-1" @onclick="CancelEditStatus">Hủy</button>
+                        }
+                        else
+                        {
+                            <button class="btn btn-warning btn-sm" @onclick="() => StartEdit(room)">Sửa</button>
+                            <button class="btn btn-info btn-sm mx-1" @onclick="() => StartEditStatus(room)">Đổi trạng thái</button>
+                            <button class="btn btn-danger btn-sm" @onclick="() => DeleteRoom(room.Id)">Xóa</button>
+                        }
+                     </td>
+                </tr>
+            }
+         </tbody>
+     </table>
+
+    <!-- Pagination -->
+    <nav>
+
+        <ul class="pagination">
+            <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                <button class="page-link" @onclick="PreviousPage"> Previous</button>
+            </li>
+
+            @for (int i = 1; i <= totalPages; i++)
+            {
+                int pageNumber = i;
+                <li class="page-item @(currentPage == pageNumber ? "active" : "")">
+                    <button class="page-link" @onclick="() => GoToPage(pageNumber)"> @pageNumber</button>
+                </li>
+            }
+            <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                <button class="page-link" @onclick="NextPage"> Next </button>
+            </li>
+        </ul>
+    </nav>
+</div>
+
+@code {
+    private string keyword = "";
+    private string selectedRoomType = "Tất cả";
+    private string selectedStatus = "Tất cả";
+    private List<RoomViewModel> Rooms = new List<RoomViewModel>();
+    private string Message = "";
+
+    // Trạng thái đang sửa dòng nào (chỉ 1 dòng tại 1 thời điểm)
+    private int? editRoomId = null;
+    private int editRoomTypeId;
+    private int? editStatusRoomId = null;
+    private decimal editPrice;
+    private int editStatusId;
+    private string? priceError = null;
+
+    //Phân trang
+    private int currentPage = 1;
+    private int pageSize = 10;
+    private int totalPages = 1;
+    private IEnumerable<RoomViewModel> PagedRooms => Rooms
+        .Skip((currentPage - 1) * pageSize)
+        .Take(pageSize);
+
+    protected override async Task OnInitializedAsync()
+    {
+        _roomService.OnChange += StateHasChanged;
+
+        await _roomService.GetRoomList();
+        await _roomTypeService.GetRoomType();
+        await _roomService.GetRoomStatus();
+
+        Rooms = _roomService._roomList.ToList();
+        totalPages = (int)Math.Ceiling((double)Rooms.Count / pageSize);
+    }
+
+    private async Task SearchRoom()
+    {
+        Rooms = _roomService._roomList
+            .Where(r =>
+                (string.IsNullOrWhiteSpace(keyword)
+                || r.RoomNumber.Contains(keyword, StringComparison.OrdinalIgnoreCase))
+                &&
+                (selectedRoomType == "Tất cả"
+                || r.RoomType == selectedRoomType)
+                &&
+                (selectedStatus == "Tất cả"
+                || r.Status == selectedStatus)
+            ).ToList();
+        currentPage = 1;
+
+        totalPages = (int)Math.Ceiling((double)Rooms.Count / pageSize);
+    }
+
+    //Cập nhật thông tin phòng
+    private void StartEdit(RoomViewModel room)
+    {
+        editRoomId = room.Id;
+        editRoomTypeId = room.RoomTypeId;
+        editPrice = room.Price;
+        priceError = null; // reset lỗi khi bắt đầu sửa dòng mới
+        Message = "";
+    }
+
+    private void CancelEdit()
+    {
+        editRoomId = null;
+    }
+
+    //Cập nhật trạng thái phòng
+    private void StartEditStatus(RoomViewModel room)
+    {
+        editStatusRoomId = room.Id;
+        editStatusId = _roomService._roomStatusList.FirstOrDefault(s => s.name == room.Status)?.Id ?? 0;
+        Message = "";
+    }
+
+    private void CancelEditStatus()
+    {
+        editStatusRoomId = null;
+    }
+
+    private void ValidatePrice()
+    {
+        if (editPrice < 1000)
+        {
+            priceError = "Giá phải lớn hơn 1000";
+            return;
+        }
+
+        // Regex giống backend: chỉ chấp nhận số kết thúc bằng "000"
+        if (!System.Text.RegularExpressions.Regex.IsMatch(editPrice.ToString("0"), @"^[1-9][0-9]*000$"))
+        {
+            priceError = "Giá phải có dạng 1000, 2000, 5000, 100000, 500000... (không có 499997, 5125, 123987...)";
+            return;
+        }
+
+        priceError = null;
+    }
+
+    private async Task SaveRoom(int id)
+    {
+        ValidatePrice();
+        if (priceError != null)
+        {
+            return; // không gọi API nếu giá không hợp lệ
+        }
+
+        var updateRoom = new UpdateRoomViewModel
+        {
+            Id = id,
+            RoomTypeId = editRoomTypeId,
+            Price = editPrice
+        };
+
+        var result = await _roomService.UpdateRoom(id, updateRoom);
+
+        if (result)
+        {
+            var room = _roomService._roomList.FirstOrDefault(r => r.Id == id);
+            if (room != null)
+            {
+                room.Price = editPrice;
+                var roomType = _roomTypeService._roomType.FirstOrDefault(x => x.Id == editRoomTypeId);
+                if (roomType != null)
+                {
+                    room.RoomType = roomType.Name;
+                    room.RoomTypeId = editRoomTypeId;
+                }
+            }
+            editRoomId = null;
+            Rooms = _roomService._roomList.ToList();
+        }
+        else
+        {
+            Message = _roomService.ErrorMessage;
+        }
+    }
+
+    private async Task SaveStatus(int id)
+    {
+        try
+        {
+            var updatestatus = new UpdateRoomStatusViewModel
+            {
+                Id = id,
+                Status = editStatusId
+            };
+
+            var result = await _roomService.UpdateRoomStatus(id, updatestatus);
+
+            Console.WriteLine($"Result = {result}");
+
+            if (result)
+            {
+                var room = _roomService._roomList.FirstOrDefault(r => r.Id == id);
+                var status = _roomService._roomStatusList.FirstOrDefault(s => s.Id == editStatusId);
+
+                editStatusRoomId = null;
+                Rooms = _roomService._roomList.ToList();
+
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+        }
+    }
+    private string GetStatusBadgeClass(string status) => status switch
+    {
+        "Available" => "text-bg-success",
+        "Occupied" => "text-bg-danger",
+        "Maintenance" => "text-bg-warning",
+        _ => "text-bg-secondary"
+    };
+
+    //Xóa
+    private async Task DeleteRoom(int id)
+    {
+        bool ok = await JS.InvokeAsync<bool>("confirm", "Bạn có chắc chắn muốn xóa phòng này không?");
+
+        if (!ok)  return;
+
+        var result = await _roomService.DeleteRoom(id);
+
+        if (result)
+        {
+            Rooms = _roomService._roomList.ToList();
+            totalPages = (int)Math.Ceiling((double)Rooms.Count / pageSize);
+            await InvokeAsync(StateHasChanged);
+        }
+        else
+        {
+            Message = _roomService.ErrorMessage;
+        }
+    }
+
+
+    private async Task GoToPage(int page)
+    {
+        currentPage = page;
+    }
+
+    private async Task PreviousPage()
+    {
+        if (currentPage > 1)
+        {
+            currentPage--;
+        }
+    }
+
+    private async Task NextPage()
+    {
+        if (currentPage < totalPages)
+        {
+            currentPage++;
+        }
+    }
+
+    public void Dispose()
+    {
+        _roomService.OnChange -= StateHasChanged;
+    }
+}

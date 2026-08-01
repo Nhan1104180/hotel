@@ -1,0 +1,16 @@
+.service{
+    background-position: center;
+    background-size: cover;
+}
+
+.service .card{
+    background: rgb(217, 161, 161) ;
+    backdrop-filter: blur(5px);
+}
+
+.service .card:hover{
+    cursor: pointer;
+    border: 1px solid rgb(216, 196, 196);
+    background-color: #e0c9c9;
+    transform:all 0.5s;
+}
