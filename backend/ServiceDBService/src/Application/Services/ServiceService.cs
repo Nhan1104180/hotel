@@ -198,10 +198,6 @@ public class ServiceService : IServiceService
             service.Name = name.Value;
             service.Description = description.Value;
             service.Price = money.Value;
-            if(!string.IsNullOrEmpty(command.ImageUrl))
-            {
-                service.ImageUrl = command.ImageUrl;
-            }
         
             // Update service
             await _serviceRepository.UpdateAsync(service);
