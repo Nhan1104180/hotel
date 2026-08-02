@@ -132,7 +132,6 @@ public class ServiceService : IServiceService
                 Price = money.Value,
                 Status = ServiceStatus.Active.ToString(),
                 CreatedAt = DateTime.Now,
-                ImageUrl = command.ImageUrl
             };
 
             // Add room
