@@ -14,6 +14,7 @@ public class RoomService
     public UpdateRoomViewModel _updateRoom { get; set; } = new UpdateRoomViewModel();
     public List<RoomStatusViewModel> _roomStatusList { get; set; } = new List<RoomStatusViewModel>();
     public UpdateRoomStatusViewModel _updateRoomStatus { get; set; } = new UpdateRoomStatusViewModel();
+    
     public string ErrorMessage { get; private set; } = "";
     public event Action? OnChange;
     private void NotifyStateChanged() => OnChange?.Invoke();

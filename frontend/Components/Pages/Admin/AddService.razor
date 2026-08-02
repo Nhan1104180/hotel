@@ -1,5 +1,8 @@
 @page "/addservice-Admin"
 @layout AdminLayout
+@inject NavigationManager Navigation
+@inject ServiceService _serviceService
+@inject ServiceCategoryService _serviceCategory
 
 <div class="container py-4">
     <div class="row justify-content-center">
@@ -9,32 +12,47 @@
                     <h4 class="mb-0">Thêm dịch vụ</h4>
                 </div>
                 <div class="card-body">
-                    <EditForm Model="serviceModel" OnValidSubmit="HandleValidSubmit">
+                    <EditForm Model="model" OnValidSubmit="HandleValidSubmit">
                         <DataAnnotationsValidator />
-                        <ValidationSummary />
-
                         <div class="mb-3">
                             <label for="serviceName" class="form-label">Tên dịch vụ</label>
-                            <InputText id="serviceName" class="form-control" @bind-Value="serviceModel.Name" />
+                            <InputText id="serviceName" class="form-control" @bind-Value="model.Name" />
+                            <ValidationMessage For="@(() => model.Name)" />
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label for="serviceCategory" class="form-label">Loại dịch vụ</label>
+                                <InputSelect class="form-select" @bind-Value="model.CategoryId">
+                                    <option value="0" selected disabled>Chọn loại dịch vụ</option>
+                                    @foreach (var item in _serviceCategory._serviceCategory)
+                                    {
+                                        <option value="@item.Id">@item.Name</option>
+                                    }
+                                </InputSelect>
+                                <ValidationMessage For="@(() => model.CategoryId)" />
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="servicePrice" class="form-label">Giá</label>
+                                <InputNumber id="servicePrice" class="form-control" @bind-Value="model.Price" />
+                                <ValidationMessage For="@(() => model.Price)" />
+                            </div>
                         </div>
 
                         <div class="mb-3">
                             <label for="serviceDescription" class="form-label">Mô tả</label>
-                            <InputTextArea id="serviceDescription" class="form-control" rows="4" @bind-Value="serviceModel.Description" />
+                            <InputText id="serviceDescription" class="form-control" @bind-Value="model.Description" />
+                            <ValidationMessage For="@(() => model.Description)" />
                         </div>
 
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label for="servicePrice" class="form-label">Giá</label>
-                                <InputNumber id="servicePrice" class="form-control" @bind-Value="serviceModel.Price" />
-                            </div>
-                            <div class="col-md-6">
-                                <label for="serviceCategory" class="form-label">Loại dịch vụ</label>
-                                <InputText id="serviceCategory" class="form-control" @bind-Value="serviceModel.Category" />
-                            </div>
-                        </div>
+                        @if (!string.IsNullOrEmpty(Message))
+                        {
+                            <div class="alert alert-danger mt-4">@Message</div>
+                        }
 
-                        <div class="mt-4 d-flex justify-content-end">
+                        <div class="d-flex justify-content-end gap-2">
+                            <button type="reset" class="btn btn-light border">Làm lại</button>
                             <button type="submit" class="btn btn-primary">Lưu dịch vụ</button>
                         </div>
                     </EditForm>
@@ -45,18 +63,35 @@
 </div>
 
 @code {
-    private ServiceModel serviceModel = new ServiceModel();
+    private AddServiceViewModel model = new AddServiceViewModel();
+    private string Message = "";
 
-    private void HandleValidSubmit()
+    protected override async Task OnInitializedAsync()
     {
-        // Xử lý lưu dịch vụ ở đây
+        _serviceCategory.OnChange += StateHasChanged;
+        await _serviceCategory.GetServiceCategory();
     }
 
-    private class ServiceModel
+    protected async Task HandleValidSubmit()
     {
-        public string Name { get; set; }
-        public string Description { get; set; }
-        public decimal? Price { get; set; }
-        public string Category { get; set; }
+        Console.WriteLine($"Name: {model.Name}");
+        Console.WriteLine($"CategoryId: {model.CategoryId}");
+        Console.WriteLine($"Price: {model.Price}");
+        Console.WriteLine($"Description: {model.Description}");
+        
+        var result = await _serviceService.AddService(model);
+        if (result)
+        {
+            Navigation.NavigateTo("/service-admin");
+        }
+        else
+        {
+            Message = _serviceService.ErrorMessage;
+        }
+    }
+
+    public void Dispose()
+    {
+        _serviceCategory.OnChange -= StateHasChanged;
     }
 }
