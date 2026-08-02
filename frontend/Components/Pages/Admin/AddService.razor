@@ -73,12 +73,7 @@
     }
 
     protected async Task HandleValidSubmit()
-    {
-        Console.WriteLine($"Name: {model.Name}");
-        Console.WriteLine($"CategoryId: {model.CategoryId}");
-        Console.WriteLine($"Price: {model.Price}");
-        Console.WriteLine($"Description: {model.Description}");
-        
+    {   
         var result = await _serviceService.AddService(model);
         if (result)
         {
