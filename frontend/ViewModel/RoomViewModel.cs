@@ -15,6 +15,16 @@ public class RoomViewModel
     public string ImageUrl { get; set; }
 }
 
+public class RoomDetailViewModel
+{
+    public string RoomNumber { get; set; }
+    public decimal Price { get; set; }
+    public string RoomType { get; set; }
+    public string Description { get; set; }
+    public int Capacity { get; set; }
+    public string ImageUrl { get; set; }
+}
+
 public class AddRoomViewModel
 {
     [Required(ErrorMessage = "Không được để trống")]
@@ -45,7 +55,7 @@ public class UpdateRoomViewModel
 public class RoomStatusViewModel
 {
     public int Id { get; set; }
-    public string name { get; set; }
+    public string? name { get; set; }
 }
 
 public class UpdateRoomStatusViewModel
