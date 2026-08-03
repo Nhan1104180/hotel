@@ -113,7 +113,7 @@ public class ServiceService : IServiceService
                 {
                     IsSuccess = false,
                     StatusCode = 400,
-                    Message = "CategoryId không tồn tại",
+                    Message = "Loại dịch vụ không tồn tại",
                     Data = null
                 };
             }
