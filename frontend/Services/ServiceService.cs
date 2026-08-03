@@ -10,6 +10,8 @@ public class ServiceService
     }
     public List<ServiceViewModel> _serviceList { get; set; } = new List<ServiceViewModel>();
     public AddServiceViewModel _addService { get; set; } = new AddServiceViewModel();
+    public UpdateServiceViewModel _updateService { get; set; } = new UpdateServiceViewModel();
+    
     public string ErrorMessage { get; private set; } = "";
     public event Action? OnChange;
     private void NotifyStateChanged() => OnChange?.Invoke();
@@ -46,22 +48,11 @@ public class ServiceService
     //Viết hàm call api http://localhost:7219/api/Service/AddService
     public async Task<bool> AddService(AddServiceViewModel service)
     {
-        Console.WriteLine("Đang gọi API AddService...");
-
-        Console.WriteLine("Data gửi:");
-
-        Console.WriteLine(JsonSerializer.Serialize(service));
-
         var response = await _httpClient.PostAsJsonAsync("Service/AddService", service);
-
-        Console.WriteLine($"Status Code: {(int)response.StatusCode} - {response.StatusCode}");
 
         if (response.IsSuccessStatusCode)
         {
             var result = await response.Content.ReadFromJsonAsync<ResponseData<AddServiceViewModel>>();
-
-            Console.WriteLine("Thêm Service thành công!");
-            Console.WriteLine($"Message: {result?.Message}");
 
             _addService = result.Data ?? new AddServiceViewModel();
             NotifyStateChanged();
@@ -70,15 +61,32 @@ public class ServiceService
         else
         {
             var error = await response.Content.ReadFromJsonAsync<ResponseData<object>>();
-            Console.WriteLine("Thêm Service thất bại!");
-            Console.WriteLine($"Lỗi: {error?.Message}");
-
             ErrorMessage = error?.Message ?? "Có lỗi xảy ra";
             NotifyStateChanged();
             return false;
         }
     }
 
+    //Viết hàm call api http://localhost:7219/api/Service/UpdateService/{id}
+    public async Task<bool> UpdateService(int id, UpdateServiceViewModel service)
+    {
+        var response = await _httpClient.PutAsJsonAsync($"Service/UpdateService/{id}", service);
 
+        if (response.IsSuccessStatusCode)
+        {
+            var result = await response.Content.ReadFromJsonAsync<ResponseData<UpdateServiceViewModel>>();
+
+            _updateService = result.Data ?? new UpdateServiceViewModel();
+            NotifyStateChanged();
+            return true;
+        }
+        else
+        {
+            var error = await response.Content.ReadFromJsonAsync<ResponseData<object>>();
+            ErrorMessage = error?.Message ?? "Có lỗi xảy ra";
+            NotifyStateChanged();
+            return false;
+        }
+    }
 
 }
