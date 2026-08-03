@@ -90,6 +90,24 @@ public class ServiceService
             return false;
         }
     }
+    
+    //Viết hàm call api http://localhost:7219/api/Service/RemoveService/{id}
+    public async Task<bool> DeleteService(int id)
+    {
+        var response = await _httpClient.DeleteAsync($"Service/RemoveService/{id}");
+
+        if (!response.IsSuccessStatusCode)
+        {
+            return false;
+        }
+
+        // Load lại danh sách
+        await GetServiceList();
+
+        NotifyStateChanged();
+
+        return true;
+    }
 
     //Viết hàm call api http://localhost:7219/api/Service/GetServiceStatus
     public async Task GetServiceStatus()

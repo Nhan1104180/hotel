@@ -3,6 +3,7 @@
 @inject ServiceService _serviceService
 @inject ServiceCategoryService _serviceCategoryService
 @inject NavigationManager Navigation
+@inject IJSRuntime JS
 
 <div class="container mt-4">
 
@@ -158,7 +159,7 @@
                             {
                                 <button class="btn btn-warning btn-sm" @onclick="() => StartEdit(item)">Sửa</button>
                                 <button class="btn btn-info btn-sm mx-1" @onclick="() => StartEditStatus(item)">Đổi trạng thái</button>
-                                <button class="btn btn-danger btn-sm ms-1">Xóa</button>
+                                <button class="btn btn-danger btn-sm ms-1" @onclick="() => DeleteService(item.Id)">Xóa</button>
                                 }
                             </td>
                         </tr>
@@ -307,6 +308,26 @@
         "Active" => "text-bg-success",
         "Inactive" => "text-bg-danger",
     };
+
+    //Xóa
+    private async Task DeleteService(int id)
+    {
+        bool ok = await JS.InvokeAsync<bool>("confirm", "Bạn có chắc chắn muốn xóa dịch vụ này không?");
+
+        if (!ok)  return;
+
+        var result = await _serviceService.DeleteService(id);
+
+        if (result)
+        {
+            Services = _serviceService._serviceList.ToList();
+            await InvokeAsync(StateHasChanged);
+        }
+        else
+        {
+            Message = _serviceService.ErrorMessage;
+        }
+    }
 
     private void Dispose()
     {
