@@ -7,8 +7,10 @@ using Application.Interfaces;
 using Application.Queries.GetServicesById;
 using Application.Queries.SearchServices;
 using AutoMapper;
+using Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Share.CommonModel;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace API.Controllers
@@ -108,19 +110,26 @@ namespace API.Controllers
             return StatusCode(result.StatusCode, result);
         }
 
-        // [HttpGet("GetAvailableRooms")]
-        // [SwaggerOperation(Summary = "Kiểm tra phòng trống")]
-        // public async Task<ActionResult> GetAvailableRooms([FromRoute] int pageIndex = 1, int pageSize = 10)
-        // {
-        //     var query = new GetAvailableRoomsQuery 
-        //     {
-        //         PageIndex = pageIndex, 
-        //         PageSize = pageSize
-        //     };
-            
-        //     var result = await _mediator.Send(query);
-        //     return StatusCode(result.StatusCode, result);
-        // }
+        [HttpGet("GetServiceStatus")]
+        [SwaggerOperation(Summary = "Xem trạng thái dịch vụ")]
+        public async Task<ActionResult> GetServiceStatus()
+        {
+            var result = Enum.GetValues(typeof(ServiceStatus))
+                .Cast<ServiceStatus>()
+                .Select(x => new
+                {
+                    Id = (int)x,
+                    Name = x.ToString()
+                });
+
+            return Ok(new ResponseEntity
+            {
+                IsSuccess = true,
+                StatusCode = 200,
+                Message = "Lấy danh sách trạng thái dịch vụ thành công",
+                Data = result
+            });
+        }
 
 
     }

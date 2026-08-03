@@ -11,6 +11,8 @@ public class ServiceService
     public List<ServiceViewModel> _serviceList { get; set; } = new List<ServiceViewModel>();
     public AddServiceViewModel _addService { get; set; } = new AddServiceViewModel();
     public UpdateServiceViewModel _updateService { get; set; } = new UpdateServiceViewModel();
+    public List<ServiceStatusViewModel> _serviceStatusList { get; set; } = new List<ServiceStatusViewModel>();
+    public UpdateServiceStatusViewModel _updateServiceStatus { get; set; } = new UpdateServiceStatusViewModel();
     
     public string ErrorMessage { get; private set; } = "";
     public event Action? OnChange;
@@ -77,6 +79,56 @@ public class ServiceService
             var result = await response.Content.ReadFromJsonAsync<ResponseData<UpdateServiceViewModel>>();
 
             _updateService = result.Data ?? new UpdateServiceViewModel();
+            NotifyStateChanged();
+            return true;
+        }
+        else
+        {
+            var error = await response.Content.ReadFromJsonAsync<ResponseData<object>>();
+            ErrorMessage = error?.Message ?? "Có lỗi xảy ra";
+            NotifyStateChanged();
+            return false;
+        }
+    }
+
+    //Viết hàm call api http://localhost:7219/api/Service/GetServiceStatus
+    public async Task GetServiceStatus()
+    {
+        try
+        {
+            var response = await _httpClient.GetAsync($"Service/GetServiceStatus");
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<ResponseData<List<ServiceStatusViewModel>>>(
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                _serviceStatusList = result.Data ?? new List<ServiceStatusViewModel>();
+                NotifyStateChanged();
+            }
+            else
+            {
+                _serviceStatusList = new List<ServiceStatusViewModel>();
+            }
+        }
+        catch (HttpRequestException)
+        {
+            // Backend không chạy
+            _serviceStatusList = new List<ServiceStatusViewModel>();
+        }
+        catch (Exception)
+        {
+            _serviceStatusList = new List<ServiceStatusViewModel>();
+        }
+    }
+
+    //Viết hàm call api http://localhost:7219/api/Service/{id}/status
+    public async Task<bool> UpdateServiceStatus(int id, UpdateServiceStatusViewModel service)
+    {
+        var response = await _httpClient.PatchAsJsonAsync($"Service/{id}/status", service);
+
+        if (response.IsSuccessStatusCode)
+        {
+            var result = await response.Content.ReadFromJsonAsync<ResponseData<UpdateServiceStatusViewModel>>();
+            _updateServiceStatus = result.Data ?? new UpdateServiceStatusViewModel();
             NotifyStateChanged();
             return true;
         }

@@ -34,7 +34,7 @@ public class AddServiceViewModel
     public string? ImageUrl { get; set; }
 }
 
-public class UpdateServiceViewModel
+public class UpdateServiceViewModel : IValidatableObject
 {
     public int Id { get; set; }
     public int CategoryId { get; set; }
@@ -59,4 +59,16 @@ public class UpdateServiceViewModel
                 new[] { nameof(Price) });
         }
     } 
+}
+
+public class ServiceStatusViewModel
+{
+    public int Id { get; set; }
+    public string? name { get; set; }
+}
+
+public class UpdateServiceStatusViewModel
+{
+    public int Id { get; set; }
+    public int Status { get; set; }
 }

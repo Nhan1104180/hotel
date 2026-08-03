@@ -28,117 +28,137 @@
         </div>
 
         <div class="col-md-5 d-flex align-items-end justify-content-end">
-            <button class="btn btn-primary" @onclick='@(() => Navigation.NavigateTo("/addservice-Admin"))'>+ Thêm dịch
-                vụ</button>
-            </div>
-
+            <button class="btn btn-primary" @onclick='@(() => Navigation.NavigateTo("/addservice-Admin"))'>+ Thêm dịch vụ</button>
         </div>
 
-        <EditForm EditContext="@editContext">
-            <DataAnnotationsValidator />
+    </div>
 
-            <!-- Table -->
-            <table class="table table-bordered table-hover align-middle">
+    <EditForm EditContext="@editContext">
+        <DataAnnotationsValidator />
 
-                <thead class="table-light">
+        <!-- Table -->
+        <table class="table table-bordered table-hover align-middle">
+
+            <thead class="table-light">
+                <tr>
+                    <th>ID</th>
+                    <th>Hình ảnh</th>
+                    <th>Tên dịch vụ</th>
+                    <th>Loại</th>
+                    <th>Giá</th>
+                    <th>Trạng thái</th>
+                    <th>Mô tả</th>
+                    <th>Thời gian</th>
+                    <th width="250">Thao tác</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @foreach (var item in _serviceService._serviceList)
+                {
+                    bool isEditing = editServiceId == item.Id;
                     <tr>
-                        <th>ID</th>
-                        <th>Hình ảnh</th>
-                        <th>Tên dịch vụ</th>
-                        <th>Loại</th>
-                        <th>Giá</th>
-                        <th>Trạng thái</th>
-                        <th>Mô tả</th>
-                        <th>Thời gian</th>
-                        <th width="170">Thao tác</th>
-                    </tr>
-                </thead>
+                        <td>@item.Id</td>
+                        <td>
+                            @if (!string.IsNullOrEmpty(item.ImageUrl))
+                            {
+                                <img src="@item.ImageUrl" class="card-img-top" style="height:20px;object-fit:cover">
+                            }
+                            else
+                            {
+                                <img src="/images/no-image.png" class="card-img-top" style="height:20px;object-fit:cover">
+                            }
+                        </td>
 
-                <tbody>
-                    @foreach (var item in _serviceService._serviceList)
-                    {
-                        bool isEditing = editServiceId == item.Id;
-                        <tr>
-                            <td>@item.Id</td>
-                            <td>
-                                @if (!string.IsNullOrEmpty(item.ImageUrl))
-                                {
-                                    <img src="@item.ImageUrl" class="card-img-top" style="height:20px;object-fit:cover">
-                                }
-                                else
-                                {
-                                    <img src="/images/no-image.png" class="card-img-top" style="height:20px;object-fit:cover">
-                                }
-                            </td>
+                        <td>
+                            @if (isEditing)
+                            {
+                                <InputText class="form-control" @bind-Value="editModel.Name" />
+                                <ValidationMessage For="@(() => editModel.Name)" />
+                            }
+                            else
+                            {
+                                @item.Name
+                            }
+                        </td>
 
-                            <td>
-                                @if (isEditing)
-                                {
-                                    <InputText class="form-control" @bind-Value="editModel.Name" />
-                                    <ValidationMessage For="@(() => editModel.Name)" />
-                                }
-                                else
-                                {
-                                    @item.Name
-                                }
-                            </td>
+                        <td>
+                            @if (isEditing)
+                            {
+                                <InputSelect class="form-select" @bind-Value="editModel.CategoryId">
+                                    @foreach (var category in _serviceCategoryService._serviceCategory)
+                                    {
+                                        <option value="@category.Id">@category.Name</option>
+                                    }
+                                </InputSelect>
+                                <ValidationMessage For="@(() => editModel.CategoryId)" />
+                            }
+                            else
+                            {
+                                @_serviceCategoryService._serviceCategory.FirstOrDefault(c => c.Id == item.CategoryId)?.Name
+                            }
+                        </td>
 
-                            <td>
-                                @if (isEditing)
-                                {
-                                    <InputSelect class="form-select" @bind-Value="editModel.CategoryId">
-                                        @foreach (var category in _serviceCategoryService._serviceCategory)
-                                        {
-                                            <option value="@category.Id">@category.Name</option>
-                                        }
-                                    </InputSelect>
-                                    <ValidationMessage For="@(() => editModel.CategoryId)" />
-                                }
-                                else
-                                {
-                                    @_serviceCategoryService._serviceCategory.FirstOrDefault(c => c.Id == item.CategoryId)?.Name
-                                }
-                            </td>
+                        <td>
+                            @if (isEditing)
+                            {
+                                <InputNumber TValue="decimal" class="form-control" @bind-Value="editModel.Price" />
+                                <ValidationMessage For="@(() => editModel.Price)" />
 
-                            <td>
-                                @if (isEditing)
-                                {
-                                    <InputNumber TValue="decimal" class="form-control" @bind-Value="editModel.Price" /> 
-                                    <ValidationMessage For="@(() => editModel.Price)" />
-                                    
-                                }
-                                else
-                                {
-                                    @($"{item.Price:N0} Đ")
-                                }
-                            </td>
+                            }
+                            else
+                            {
+                                @($"{item.Price:N0} Đ")
+                            }
+                        </td>
 
-                            <td> @item.Status </td>
-                            <td>
-                                @if (isEditing)
-                                {
-                                    <InputTextArea class="form-control" @bind-Value="editModel.Description" />
-                                    <ValidationMessage For="@(() => editModel.Description)" />
-                                }
-                                else
-                                {
-                                    @item.Description
-                                }
-                            </td>
+                        <td>
+                            @if (editStatusServiceId == item.Id)
+                            {
+                                <InputSelect class="form-select form-select-sm" @bind-Value="editStatusId">
+                                    @foreach (var status in _serviceService._serviceStatusList)
+                                    {
+                                        <option value="@status.Id">@status.name</option>
+                                    }
+                                </InputSelect>
+                            }
+                            else
+                            {
+                                <span class="badge @GetStatusBadgeClass(item.Status)">@item.Status</span>
+                            }
+                        </td>
 
-                            <td> @item.CreatedAt.ToString("dddd, dd/MM/yyyy") </td>
-                            <td>
-                                @if (isEditing)@* Cập nhật thông tin dịch vụ *@
-                                {
-                                    <button type="button" class="btn btn-success btn-sm"
-                                            @onclick="() => SaveService(item.Id)">Lưu</button>
-                                    <button class="btn btn-secondary btn-sm mx-1" @onclick="CancelEdit">Hủy</button>
-                                }
-                                else
-                                {
-                                    <button class="btn btn-warning btn-sm" @onclick="() => StartEdit(item)">Sửa</button>
-                                    <button class="btn btn-info btn-sm mx-1">Đổi trạng thái</button>
-                                    <button class="btn btn-danger btn-sm ms-1">Xóa</button>
+                        <td>
+                            @if (isEditing)
+                            {
+                                <InputTextArea class="form-control" style="height: 150px; width:150px;" @bind-Value="editModel.Description" />
+                                <ValidationMessage For="@(() => editModel.Description)" />
+                            }
+                            else
+                            {
+                                @item.Description
+                            }
+                        </td>
+
+                        <td> @item.CreatedAt.ToString("dddd, dd/MM/yyyy") </td>
+                        <td>
+                            @if (isEditing)@* Cập nhật thông tin dịch vụ *@
+                            {
+                                <button type="button" class="btn btn-success btn-sm"
+                                        @onclick="() => SaveService(item.Id)">Lưu</button>
+                                <button class="btn btn-secondary btn-sm mx-1" @onclick="CancelEdit">Hủy</button>
+                            }
+                            else if (editStatusServiceId == item.Id)
+                            @* Cập nhật trạng thái dịch vụ *@
+                            {
+                                <button class="btn btn-success btn-sm" @onclick="() => SaveStatus(item.Id)">Lưu</button>
+                                <button class="btn btn-secondary btn-sm mx-1" @onclick="CancelEditStatus">Hủy</button>
+                            }
+                            else
+                            {
+                                <button class="btn btn-warning btn-sm" @onclick="() => StartEdit(item)">Sửa</button>
+                                <button class="btn btn-info btn-sm mx-1" @onclick="() => StartEditStatus(item)">Đổi trạng thái</button>
+                                <button class="btn btn-danger btn-sm ms-1">Xóa</button>
                                 }
                             </td>
                         </tr>
@@ -146,7 +166,7 @@
                 </tbody>
 
             </table>
-        </EditForm>
+    </EditForm>
 
         
         <!-- Pagination -->
@@ -160,7 +180,7 @@
             </ul>
         </nav>
 
-    </div>
+</div>
 
 @code
 {
@@ -168,6 +188,8 @@
     private UpdateServiceViewModel editModel = new();
     private string Message = "";
     private int? editServiceId = null;
+    private int? editStatusServiceId = null;
+    private int editStatusId;
     private EditContext editContext;
 
     protected override async Task OnInitializedAsync()
@@ -176,9 +198,11 @@
 
 
         _serviceService.OnChange += StateHasChanged;
+
         _serviceCategoryService.OnChange += StateHasChanged;
 
         await _serviceService.GetServiceList();
+        await _serviceService.GetServiceStatus();
         await _serviceCategoryService.GetServiceCategory();
     }
 
@@ -202,6 +226,19 @@
     private void CancelEdit()
     {
         editServiceId = null;
+    }
+
+    //Cập nhật trạng thái dịch vụ
+    private void StartEditStatus(ServiceViewModel service)
+    {
+        editStatusServiceId = service.Id;
+        editStatusId = _serviceService._serviceStatusList.FirstOrDefault(s => s.name == service.Status)?.Id ?? 0;
+        Message = "";
+    }
+
+    private void CancelEditStatus()
+    {
+        editStatusServiceId = null;
     }
 
     private async Task SaveService(int id)
@@ -229,6 +266,47 @@
             Message = _serviceService.ErrorMessage;
         }
     }
+
+    private async Task SaveStatus(int id)
+    {
+        try
+        {
+            var updatestatus = new UpdateServiceStatusViewModel
+            {
+                Id = id,
+                Status = editStatusId
+            };
+
+            var result = await _serviceService.UpdateServiceStatus(id, updatestatus);
+
+            if (result)
+            {
+                var service = _serviceService._serviceList.FirstOrDefault(r => r.Id == id);
+                var status = _serviceService._serviceStatusList.FirstOrDefault(s => s.Id == editStatusId);
+
+                if (service != null && status != null)
+                {
+                    service.Status = status.name;
+                }
+
+                editStatusServiceId = null;
+                Services = _serviceService._serviceList.ToList();
+                
+                await _serviceService.GetServiceList();
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+        }
+    }
+
+    private string GetStatusBadgeClass(string status) => status switch
+    {
+        "Active" => "text-bg-success",
+        "Inactive" => "text-bg-danger",
+    };
 
     private void Dispose()
     {
