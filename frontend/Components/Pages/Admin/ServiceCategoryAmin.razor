@@ -1,0 +1,184 @@
+@page "/categoryservice-admin"
+@layout AdminLayout
+@inject ServiceCategoryService _serviceCategoryService
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+
+<div class="container-fluid py-4" style=" margin: 0 auto;">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-1">Quản lý dịch vụ</h2>
+        <button class="btn btn-primary" @onclick='@(() => Navigation.NavigateTo("/Addcategory-Admin"))'>+ Thêm loại dịch
+            vụ</button>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body">
+            @if (!string.IsNullOrEmpty(Message))
+            {
+                <div class="alert alert-danger mt-3">
+                    @Message
+                </div>
+            }
+
+            <EditForm EditContext="@editContext">
+                <DataAnnotationsValidator />
+                <div class="table-responsive mt-5">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Id</th>
+                                <th>Hình ảnh</th>
+                                <th>Tên</th>
+                                <th>Mô tả</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in _serviceCategoryService._serviceCategory)
+                            {
+                                bool isEditing = editingCategoryId == item.Id;
+
+                                <tr>
+                                    <td>@item.Id</td>
+                                    
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(item.ImageUrl))
+                                        {
+                                            <img src="@item.ImageUrl" class="card-img-top" style="height:20px;object-fit:cover">
+                                        }
+                                        else
+                                        {
+                                            <img src="/images/no-image.png" class="card-img-top" style="height:20px;object-fit:cover">
+                                        }
+                                    </td>
+
+                                    <td>
+                                        @if (isEditing)
+                                        {
+                                            <InputText class="form-control" @bind-Value="editModel.Name" />
+                                        }
+                                        else
+                                        {
+                                            @item.Name
+                                        }
+                                    </td>
+
+                                    <td>
+                                        @if (isEditing)
+                                        {
+                                            <InputTextArea class="form-control" @bind-Value="editModel.Description" />
+                                        }
+                                        else
+                                        {
+                                            @item.Description
+                                        }
+                                    </td>
+
+                                    <td>
+                                        @if (isEditing)
+                                        {
+                                            <button type="button" class="btn btn-success btn-sm" @onclick="@(() => SaveCategory(item.Id))">Lưu</button>
+                                            <button type="button" class="btn btn-secondary btn-sm" @onclick="@CancelEdit">Hủy</button>
+                                        }
+                                        else
+                                        {
+                                            <button type="button" class="btn btn-warning btn-sm" @onclick="@(() => StartEdit(item))">Sửa</button>
+                                            <button type="button" class="btn btn-danger btn-sm" @onclick="@(() => DeleteCategory(item.Id))">Xóa</button>
+                                        } 
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+    
+@code {
+    private List<ServiceCategoryViewModel> Category = new List<ServiceCategoryViewModel>();
+    private UpdateServiceCategoryViewModel editModel = new UpdateServiceCategoryViewModel();
+    private string Message = "";
+    private int? editingCategoryId = null;
+    private string? editingCategoryName = null;
+    private string? editingCategoryDescription = null;
+    private string? priceError = null;
+    private EditContext editContext;
+
+    protected override async Task OnInitializedAsync()
+    {
+        editContext = new EditContext(editModel);
+        _serviceCategoryService.OnChange += StateHasChanged;
+
+        await _serviceCategoryService.GetServiceCategory();
+    }
+
+    //Câp nhật loại dịch vụ
+    private void StartEdit(ServiceCategoryViewModel category)
+{
+    editingCategoryId = category.Id;
+
+    editModel = new UpdateServiceCategoryViewModel
+    {
+        Name = category.Name,
+        Description = category.Description
+    };
+
+    editContext = new EditContext(editModel);
+
+    priceError = null;
+    Message = "";
+}
+
+    private void CancelEdit()
+    {
+        editingCategoryId = null;
+    }
+
+    private async Task SaveCategory(int id)
+    {
+        if (!editContext.Validate()) return;
+
+        var result = await _serviceCategoryService.UpdateCategory(id, editModel);
+
+        if (result)
+        {
+            var category = _serviceCategoryService._serviceCategory.FirstOrDefault(r => r.Id == id);
+            if (category != null)
+            {
+                category.Name = editModel.Name!;
+                category.Description = editModel.Description!;
+            }
+            editingCategoryId = null;
+        }
+        else
+        {
+            Message = _serviceCategoryService.ErrorMessage;
+        }
+    }
+
+    private async Task DeleteCategory(int id)
+    {
+        bool ok = await JS.InvokeAsync<bool>("confirm", "Bạn có chắc chắn muốn xóa loại dịch vụ này không?");
+
+        if (!ok) return;
+
+        var result = await _serviceCategoryService.DeleteCategory(id);
+        if (result)
+        {
+            Category = _serviceCategoryService._serviceCategory.ToList();
+            await _serviceCategoryService.GetServiceCategory(); // Load lại dữ liệu
+        }
+        else
+        {
+            Message = _serviceCategoryService.ErrorMessage;
+        }
+    } 
+
+    public void Dispose()
+    {
+        _serviceCategoryService.OnChange -= StateHasChanged;
+    }
+}

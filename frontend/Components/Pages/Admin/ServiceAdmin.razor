@@ -143,8 +143,7 @@
                         <td>
                             @if (isEditing)
                             {
-                                <InputTextArea class="form-control" style="height: 150px; width:150px;"
-                                                @bind-Value="editModel.Description" />
+                                <InputTextArea class="form-control" style="height: 150px; width:150px;" @bind-Value="editModel.Description" />
                                 <ValidationMessage For="@(() => editModel.Description)" />
                             }
                             else
@@ -230,9 +229,7 @@
     {
         editContext = new EditContext(editModel);
 
-
         _serviceService.OnChange += StateHasChanged;
-
         _serviceCategoryService.OnChange += StateHasChanged;
 
         await _serviceService.GetServiceList();
