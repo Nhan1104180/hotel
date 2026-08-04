@@ -68,7 +68,6 @@ public class CategoryService : ICategoryService
             {
                 Name = categoryName.Value,
                 Description = description.Value,
-                ImageUrl = command.ImageUrl
             };
             
             await _serviceCategoryRepository.AddCategoryAsync(category);
@@ -113,7 +112,6 @@ public class CategoryService : ICategoryService
             
             category.Name = categoryName.Value;
             category.Description = description.Value;
-            category.ImageUrl = command.ImageUrl;
             
             //Update Caterory
             await _serviceCategoryRepository.UpdateAsync(category);
