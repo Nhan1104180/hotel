@@ -6,96 +6,91 @@
 
 <div class="container-fluid py-4" style=" margin: 0 auto;">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="mb-1">Quản lý loại phòng</h2>
-            <p class="text-muted mb-0">Thêm, sửa và quản lý các loại phòng trong khách sạn.</p>
-        </div>
-        <button class="btn btn-primary" @onclick='@(() => Navigation.NavigateTo("/Addroomtype"))'>+ Thêm loại
-            phòng</button>
-        </div>
+        <h2 class="mb-1">Quản lý loại phòng</h2>
+        <button class="btn btn-primary" @onclick='@(() => Navigation.NavigateTo("/Addroomtype"))'>+ Thêm loại phòng</button>
+    </div>
 
-        <div class="card shadow-sm border-0">
-            <div class="card-body">
-                <h5 class="card-title mb-0">Danh sách loại phòng</h5>
-                @if (!string.IsNullOrEmpty(Message))
-                {
-                    <div class="alert alert-danger mt-3">
-                        @Message
-                    </div>
-                }
-
-                <div class="table-responsive mt-5">
-                    <table class="table table-hover align-middle">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Tên</th>
-                                <th>Số người</th>
-                                <th>Mô tả</th>
-                                <th>Thao tác</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var item in _roomTypeService._roomType)
-                            {
-                                bool isEditing = editingRoomTypeId == item.Id;
-
-                                <tr>
-                                    <td>
-                                        @if (isEditing)
-                                        {
-                                            <input type="text" class="form-control" @bind="editingRoomName" />
-                                        }
-                                        else
-                                        {
-                                            @item.Name
-                                        }
-                                    </td>
-
-                                    <td>
-                                        @if (isEditing)
-                                        {
-                                            <input type="number" class="form-control" @bind="editingRoomCapacity" />
-                                        }
-                                        else
-                                        {
-                                            @($"{item.Capacity} Người")
-                                        }
-                                    </td>
-
-                                    <td>
-                                        @if (isEditing)
-                                        {
-                                            <input type="text" class="form-control" @bind="editingRoomDescription" />
-                                        }
-                                        else
-                                        {
-                                            @item.Description
-                                        }
-                                    </td>
-
-                                    <td>
-                                        @if (isEditing)
-                                        {
-                                            <button class="btn btn-success btn-sm"
-                                                    @onclick="@(() => SaveRoomType(item.Id))">Lưu</button>
-                                            <button class="btn btn-secondary btn-sm" @onclick="@CancelEdit">Hủy</button>
-                                        }
-                                        else
-                                        {
-                                            <button class="btn btn-warning btn-sm" @onclick="@(() => StartEdit(item))">Sửa</button>
-                                            <button class="btn btn-danger btn-sm"
-                                                    @onclick="@(() => DeleteRoomType(item.Id))">Xóa</button>
-                                        }
-
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
+    <div class="card shadow-sm border-0">
+        <div class="card-body">
+            @if (!string.IsNullOrEmpty(Message))
+            {
+                <div class="alert alert-danger mt-3">
+                    @Message
                 </div>
+            }
+
+            <div class="table-responsive mt-5">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Tên</th>
+                            <th>Số người</th>
+                            <th>Mô tả</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in _roomTypeService._roomType)
+                        {
+                            bool isEditing = editingRoomTypeId == item.Id;
+
+                            <tr>
+                                <td>
+                                    @if (isEditing)
+                                    {
+                                        <input type="text" class="form-control" @bind="editingRoomName" />
+                                    }
+                                    else
+                                    {
+                                        @item.Name
+                                    }
+                                </td>
+
+                                <td>
+                                    @if (isEditing)
+                                    {
+                                        <input type="number" class="form-control" @bind="editingRoomCapacity" />
+                                    }
+                                    else
+                                    {
+                                        @($"{item.Capacity} Người")
+                                    }
+                                </td>
+
+                                <td>
+                                    @if (isEditing)
+                                    {
+                                        <input type="text" class="form-control" @bind="editingRoomDescription" />
+                                    }
+                                    else
+                                    {
+                                        @item.Description
+                                    }
+                                </td>
+
+                                <td>
+                                    @if (isEditing)
+                                    {
+                                        <button class="btn btn-success btn-sm"
+                                                @onclick="@(() => SaveRoomType(item.Id))">Lưu</button>
+                                        <button class="btn btn-secondary btn-sm" @onclick="@CancelEdit">Hủy</button>
+                                    }
+                                    else
+                                    {
+                                        <button class="btn btn-warning btn-sm" @onclick="@(() => StartEdit(item))">Sửa</button>
+                                        <button class="btn btn-danger btn-sm"
+                                                @onclick="@(() => DeleteRoomType(item.Id))">Xóa</button>
+                                    }
+
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
+</div>
 
     
 @code {

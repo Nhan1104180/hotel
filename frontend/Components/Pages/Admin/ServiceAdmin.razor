@@ -6,192 +6,227 @@
 @inject IJSRuntime JS
 
 <div class="container mt-4">
-
-    <h3 class="mb-4">Quản lý dịch vụ</h3>
-
-    <!-- Search -->
-    <div class="row mb-4">
-
-        <div class="col-md-4">
-            <label class="form-label">Search</label>
-            <input type="text" class="form-control" placeholder="Search service..." />
+    <div class="d-flex justify-content-between align-items-center">
+        <h3 class="mb-4">Quản lý dịch vụ</h3>
+        <button class="btn btn-primary" @onclick='@(() => Navigation.NavigateTo("/addservice-Admin"))'>+ Thêm dịch vụ</button>
         </div>
 
-        <div class="col-md-3">
-            <label class="form-label">Category</label>
-            <select class="form-select">
-                <option>Tất cả</option>
-                @foreach (var item in _serviceCategoryService._serviceCategory)
-                {
-                    <option>@item.Name</option>
-                }
-            </select>
-        </div>
+        <EditForm EditContext="@editContext">
+            <DataAnnotationsValidator />
 
-        <div class="col-md-5 d-flex align-items-end justify-content-end">
-            <button class="btn btn-primary" @onclick='@(() => Navigation.NavigateTo("/addservice-Admin"))'>+ Thêm dịch vụ</button>
-        </div>
+            <!-- Search -->
+            <div class="row g-3 align-items-end mb-4">
+                <div class="col-md-4">
+                    <label class="form-label">Tìm kiếm</label>
+                    <InputText class="form-control" placeholder="Tìm kiếm dịch vụ..." @bind-Value="keyword" />
+                </div>
 
-    </div>
+                <div class="col-md-3">
+                    <label class="form-label">Loại dịch vụ</label>
+                    <InputSelect class="form-select" @bind-Value="selectedCategory">
+                        <option>Tất cả</option>
+                        @foreach (var item in _serviceCategoryService._serviceCategory)
+                        {
+                            <option value="@item.Id">@item.Name</option>
+                        }
+                    </InputSelect>
+                </div>
 
-    <EditForm EditContext="@editContext">
-        <DataAnnotationsValidator />
+                <div class="col-md-3">
+                    <label class="form-label">Trạng thái</label>
+                    <InputSelect class="form-select" @bind-Value="selectedStatus">
+                        <option>Tất cả</option>
+                        @foreach (var item in _serviceService._serviceStatusList)
+                        {
+                            <option>@item.name</option>
+                        }
+                    </InputSelect>
+                </div>
 
-        <!-- Table -->
-        <table class="table table-bordered table-hover align-middle">
+                <div class="col-md-2">
+                    <button class="btn btn-success w-100" @onclick="SearchService">Tìm</button>
+                </div>
+            </div>
 
-            <thead class="table-light">
-                <tr>
-                    <th>ID</th>
-                    <th>Hình ảnh</th>
-                    <th>Tên dịch vụ</th>
-                    <th>Loại</th>
-                    <th>Giá</th>
-                    <th>Trạng thái</th>
-                    <th>Mô tả</th>
-                    <th>Thời gian</th>
-                    <th width="250">Thao tác</th>
-                </tr>
-            </thead>
+            <!-- Table -->
+            <table class="table table-bordered table-hover align-middle">
 
-            <tbody>
-                @foreach (var item in _serviceService._serviceList)
-                {
-                    bool isEditing = editServiceId == item.Id;
+                <thead class="table-light">
                     <tr>
-                        <td>@item.Id</td>
-                        <td>
-                            @if (!string.IsNullOrEmpty(item.ImageUrl))
-                            {
-                                <img src="@item.ImageUrl" class="card-img-top" style="height:20px;object-fit:cover">
-                            }
-                            else
-                            {
-                                <img src="/images/no-image.png" class="card-img-top" style="height:20px;object-fit:cover">
-                            }
-                        </td>
+                        <th>ID</th>
+                        <th>Hình ảnh</th>
+                        <th>Tên dịch vụ</th>
+                        <th>Loại</th>
+                        <th>Giá</th>
+                        <th>Trạng thái</th>
+                        <th>Mô tả</th>
+                        <th>Thời gian</th>
+                        <th width="250">Thao tác</th>
+                    </tr>
+                </thead>
 
-                        <td>
-                            @if (isEditing)
-                            {
-                                <InputText class="form-control" @bind-Value="editModel.Name" />
-                                <ValidationMessage For="@(() => editModel.Name)" />
-                            }
-                            else
-                            {
-                                @item.Name
-                            }
-                        </td>
-
-                        <td>
-                            @if (isEditing)
-                            {
-                                <InputSelect class="form-select" @bind-Value="editModel.CategoryId">
-                                    @foreach (var category in _serviceCategoryService._serviceCategory)
-                                    {
-                                        <option value="@category.Id">@category.Name</option>
-                                    }
-                                </InputSelect>
-                                <ValidationMessage For="@(() => editModel.CategoryId)" />
-                            }
-                            else
-                            {
-                                @_serviceCategoryService._serviceCategory.FirstOrDefault(c => c.Id == item.CategoryId)?.Name
-                            }
-                        </td>
-
-                        <td>
-                            @if (isEditing)
-                            {
-                                <InputNumber TValue="decimal" class="form-control" @bind-Value="editModel.Price" />
-                                <ValidationMessage For="@(() => editModel.Price)" />
-
-                            }
-                            else
-                            {
-                                @($"{item.Price:N0} Đ")
-                            }
-                        </td>
-
-                        <td>
-                            @if (editStatusServiceId == item.Id)
-                            {
-                                <InputSelect class="form-select form-select-sm" @bind-Value="editStatusId">
-                                    @foreach (var status in _serviceService._serviceStatusList)
-                                    {
-                                        <option value="@status.Id">@status.name</option>
-                                    }
-                                </InputSelect>
-                            }
-                            else
-                            {
-                                <span class="badge @GetStatusBadgeClass(item.Status)">@item.Status</span>
-                            }
-                        </td>
-
-                        <td>
-                            @if (isEditing)
-                            {
-                                <InputTextArea class="form-control" style="height: 150px; width:150px;" @bind-Value="editModel.Description" />
-                                <ValidationMessage For="@(() => editModel.Description)" />
-                            }
-                            else
-                            {
-                                @item.Description
-                            }
-                        </td>
-
-                        <td> @item.CreatedAt.ToString("dddd, dd/MM/yyyy") </td>
-                        <td>
-                            @if (isEditing)@* Cập nhật thông tin dịch vụ *@
-                            {
-                                <button type="button" class="btn btn-success btn-sm"
-                                        @onclick="() => SaveService(item.Id)">Lưu</button>
-                                <button class="btn btn-secondary btn-sm mx-1" @onclick="CancelEdit">Hủy</button>
-                            }
-                            else if (editStatusServiceId == item.Id)
-                            @* Cập nhật trạng thái dịch vụ *@
-                            {
-                                <button class="btn btn-success btn-sm" @onclick="() => SaveStatus(item.Id)">Lưu</button>
-                                <button class="btn btn-secondary btn-sm mx-1" @onclick="CancelEditStatus">Hủy</button>
-                            }
-                            else
-                            {
-                                <button class="btn btn-warning btn-sm" @onclick="() => StartEdit(item)">Sửa</button>
-                                <button class="btn btn-info btn-sm mx-1" @onclick="() => StartEditStatus(item)">Đổi trạng thái</button>
-                                <button class="btn btn-danger btn-sm ms-1" @onclick="() => DeleteService(item.Id)">Xóa</button>
+                <tbody>
+                    @foreach (var (item, i) in PagedServices.Select((item, i) => (item, i)))
+                    {
+                        bool isEditing = editServiceId == item.Id;
+                        <tr>
+                            <td>@item.Id</td>
+                            <td>
+                                @if (!string.IsNullOrEmpty(item.ImageUrl))
+                                {
+                                    <img src="@item.ImageUrl" class="card-img-top" style="height:20px;object-fit:cover">
+                                }
+                                else
+                                {
+                                    <img src="/images/no-image.png" class="card-img-top" style="height:20px;object-fit:cover">
                                 }
                             </td>
-                        </tr>
-                    }
-                </tbody>
 
-            </table>
-    </EditForm>
+                            <td>
+                                @if (isEditing)
+                                {
+                                    <InputText class="form-control" @bind-Value="editModel.Name" />
+                                    <ValidationMessage For="@(() => editModel.Name)" />
+                                }
+                                else
+                                {
+                                    @item.Name
+                                }
+                            </td>
+
+                            <td>
+                                @if (isEditing)
+                                {
+                                    <InputSelect class="form-select" @bind-Value="editModel.CategoryId">
+                                        @foreach (var category in _serviceCategoryService._serviceCategory)
+                                        {
+                                            <option value="@category.Id">@category.Name</option>
+                                        }
+                                    </InputSelect>
+                                    <ValidationMessage For="@(() => editModel.CategoryId)" />
+                                }
+                                else
+                                {
+                                    @_serviceCategoryService._serviceCategory.FirstOrDefault(c => c.Id == item.CategoryId)?.Name
+                                }
+                            </td>
+
+                            <td>
+                                @if (isEditing)
+                                {
+                                    <InputNumber TValue="decimal" class="form-control" @bind-Value="editModel.Price" />
+                                    <ValidationMessage For="@(() => editModel.Price)" />
+
+                                }
+                                else
+                                {
+                                    @($"{item.Price:N0} Đ")
+                                }
+                            </td>
+
+                            <td>
+                                @if (editStatusServiceId == item.Id)
+                                {
+                                    <InputSelect class="form-select form-select-sm" @bind-Value="editStatusId">
+                                        @foreach (var status in _serviceService._serviceStatusList)
+                                        {
+                                            <option value="@status.Id">@status.name</option>
+                                        }
+                                    </InputSelect>
+                                }
+                                else
+                                {
+                                    <span class="badge @GetStatusBadgeClass(item.Status)">@item.Status</span>
+                                }
+                            </td>
+
+                            <td>
+                                @if (isEditing)
+                                {
+                                    <InputTextArea class="form-control" style="height: 150px; width:150px;"
+                                                   @bind-Value="editModel.Description" />
+                                    <ValidationMessage For="@(() => editModel.Description)" />
+                                }
+                                else
+                                {
+                                    @item.Description
+                                }
+                            </td>
+
+                            <td> @item.CreatedAt.ToString("dddd, dd/MM/yyyy") </td>
+                            <td>
+                                @if (isEditing)@* Cập nhật thông tin dịch vụ *@
+                                {
+                                    <button type="button" class="btn btn-success btn-sm"
+                                            @onclick="() => SaveService(item.Id)">Lưu</button>
+                                    <button class="btn btn-secondary btn-sm mx-1" @onclick="CancelEdit">Hủy</button>
+                                }
+                                else if (editStatusServiceId == item.Id)
+                                @* Cập nhật trạng thái dịch vụ *@
+                                {
+                                    <button class="btn btn-success btn-sm" @onclick="() => SaveStatus(item.Id)">Lưu</button>
+                                    <button class="btn btn-secondary btn-sm mx-1" @onclick="CancelEditStatus">Hủy</button>
+                                }
+                                else
+                                {
+                                    <button class="btn btn-warning btn-sm" @onclick="() => StartEdit(item)">Sửa</button>
+                                    <button class="btn btn-info btn-sm mx-1" @onclick="() => StartEditStatus(item)">Đổi trạng
+                                        thái</button>
+                                        <button class="btn btn-danger btn-sm ms-1" @onclick="() => DeleteService(item.Id)">Xóa</button>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+
+                </table>
+            </EditForm>
 
         
-        <!-- Pagination -->
-        <nav>
-            <ul class="pagination justify-content-center">
-                <li class="page-item disabled"><a class="page-link" href="#">Previous</a></li>
-                <li class="page-item active"> <a class="page-link" href="#">1</a></li>
-                <li class="page-item"><a class="page-link" href="#">2</a></li>
-                <li class="page-item"><a class="page-link" href="#">3</a></li>
-                <li class="page-item"><a class="page-link" href="#">Next</a></li>
-            </ul>
-        </nav>
+            <!-- Pagination -->
+            @if (totalPages > 1)
+            {
+                <nav>
+                    <ul class="pagination">
+                        <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                            <button class="page-link" @onclick="PreviousPage"> Previous</button>
+                        </li>
 
-</div>
+                        @for (int i = 1; i <= totalPages; i++)
+                        {
+                            int pageNumber = i;
+                            <li class="page-item @(currentPage == pageNumber ? "active" : "")">
+                                <button class="page-link" @onclick="() => GoToPage(pageNumber)"> @pageNumber</button>
+                            </li>
+                        }
+                        <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                            <button class="page-link" @onclick="NextPage"> Next </button>
+                        </li>
+                    </ul>
+                </nav>
+            }
+        </div>
 
 @code
 {
     private List<ServiceViewModel> Services = new List<ServiceViewModel>();
     private UpdateServiceViewModel editModel = new();
+    private string keyword = "";
     private string Message = "";
+    private int? selectedCategory = null;
+    private string selectedStatus = "Tất cả";
     private int? editServiceId = null;
     private int? editStatusServiceId = null;
     private int editStatusId;
     private EditContext editContext;
+
+    //Phân trang
+    private int currentPage = 1;
+    private int pageSize = 10;
+    private int totalPages = 1;
+    private IEnumerable<ServiceViewModel> PagedServices => Services
+        .Skip((currentPage - 1) * pageSize)
+        .Take(pageSize);
 
     protected override async Task OnInitializedAsync()
     {
@@ -205,6 +240,9 @@
         await _serviceService.GetServiceList();
         await _serviceService.GetServiceStatus();
         await _serviceCategoryService.GetServiceCategory();
+
+        Services = _serviceService._serviceList.ToList();
+        totalPages = (int)Math.Ceiling((double)Services.Count / pageSize);
     }
 
     //Cập nhật thông tin dịch vụ
@@ -292,7 +330,7 @@
 
                 editStatusServiceId = null;
                 Services = _serviceService._serviceList.ToList();
-                
+
                 await _serviceService.GetServiceList();
                 await InvokeAsync(StateHasChanged);
             }
@@ -314,7 +352,7 @@
     {
         bool ok = await JS.InvokeAsync<bool>("confirm", "Bạn có chắc chắn muốn xóa dịch vụ này không?");
 
-        if (!ok)  return;
+        if (!ok) return;
 
         var result = await _serviceService.DeleteService(id);
 
@@ -326,6 +364,70 @@
         else
         {
             Message = _serviceService.ErrorMessage;
+        }
+    }
+
+    public static string RemoveVietnameseTone(string text)
+    {
+        if (string.IsNullOrEmpty(text))
+            return "";
+
+        text = text.Normalize(NormalizationForm.FormD); 
+
+        var sb = new StringBuilder();
+
+        foreach (char c in text)
+        {
+            @* var uc = CharUnicodeInfo.GetUnicodeCategory(c); *@
+            var uc = CharUnicodeInfo.GetUnicodeCategory(c);
+
+            if (uc != UnicodeCategory.NonSpacingMark)
+                sb.Append(c);
+        }
+
+        return sb.ToString()
+                 .Replace('đ', 'd')
+                 .Replace('Đ', 'D')
+                 .Normalize(NormalizationForm.FormC);
+    }
+
+    //Tìm kiếm dịch vụ
+    private async Task SearchService()
+    {
+        Services = _serviceService._serviceList
+            .Where(x =>
+                (string.IsNullOrWhiteSpace(keyword) || RemoveVietnameseTone(x.Name)
+                .Contains(RemoveVietnameseTone(keyword),
+                StringComparison.OrdinalIgnoreCase))
+                &&
+                (!selectedCategory.HasValue || x.CategoryId == selectedCategory)
+                &&
+                (selectedStatus == "Tất cả"
+                || x.Status == selectedStatus)
+            ).ToList();
+        currentPage = 1;
+
+        totalPages = Math.Max(1, (int)Math.Ceiling((double)Services.Count / pageSize));
+    }
+
+    private async Task GoToPage(int page)
+    {
+        currentPage = page;
+    }
+
+    private async Task PreviousPage()
+    {
+        if (currentPage > 1)
+        {
+            currentPage--;
+        }
+    }
+
+    private async Task NextPage()
+    {
+        if (currentPage < totalPages)
+        {
+            currentPage++;
         }
     }
 
