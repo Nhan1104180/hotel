@@ -7,6 +7,7 @@ var ServiceDBService = builder.AddProject<Projects.ServiceDBService>("ServiceDBS
 var BookingDBService = builder.AddProject<Projects.BookingDBService>("BookingDBService");
 var NotificationDBService = builder.AddProject<Projects.NotificationDBService>("NotificationDBService");
 var PaymentDBService = builder.AddProject<Projects.PaymentDBService>("PaymentDBService");
+var CustomerDBService = builder.AddProject<Projects.CustomerDBService>("CustomerDBService");
 var ReviewDBService = builder.AddProject<Projects.ReviewDBService>("ReviewDBService");
 
 

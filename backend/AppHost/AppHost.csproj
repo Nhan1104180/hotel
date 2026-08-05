@@ -23,6 +23,7 @@
     <ProjectReference Include="..\RoomDBService\RoomDBService.csproj" />
     <ProjectReference Include="..\IdentityDBService\IdentityDBService.csproj" />
     <ProjectReference Include="..\NotificationDBService\NotificationDBService.csproj" />
+    <ProjectReference Include="..\CustomerDBService\CustomerDBService.csproj" />
   </ItemGroup>
 
 </Project>
